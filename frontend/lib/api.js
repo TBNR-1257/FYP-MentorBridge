@@ -16,3 +16,23 @@ export async function apiFetch(path, options = {}) {
 
   return res.json();
 }
+
+export function login(email, password) {
+  return apiFetch("/auth/login", {
+    method: "POST",
+    body: JSON.stringify({ email, password }),
+  });
+}
+
+export function register(payload) {
+  return apiFetch("/auth/register", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function fetchMe(token) {
+  return apiFetch("/auth/me", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}

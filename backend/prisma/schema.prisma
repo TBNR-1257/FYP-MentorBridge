@@ -7,11 +7,357 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Placeholder model so `prisma generate` has something to work with.
-// The full data model (students, mentors, sessions, matching, gamification, etc.)
-// is designed in the next step.
+// =========================================================
+// Enums
+// =========================================================
+
+enum Role {
+  STUDENT
+  MENTOR
+  ADMIN
+}
+
+enum EducationLevel {
+  PRIMARY
+  SECONDARY
+  UNDERGRADUATE
+  POSTGRADUATE
+  OTHER
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum UrgencyLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum SessionFormat {
+  TEXT_CHAT
+  VIDEO_CALL
+  IN_PERSON
+}
+
+enum HelpRequestStatus {
+  OPEN
+  MATCHED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum SessionStatus {
+  SCHEDULED
+  COMPLETED
+  NO_SHOW
+  CANCELLED
+}
+
+// =========================================================
+// Users & Profiles
+// =========================================================
+
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
+  id           String @id @default(uuid())
+  email        String @unique
+  passwordHash String
+  role         Role
+  name         String
+
+  isActive        Boolean   @default(true)
+  suspendedAt     DateTime?
+  suspendedReason String?
+
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  studentProfile StudentProfile?
+  mentorProfile  MentorProfile?
+
+  sentNotifications Notification[]  @relation("NotificationUser")
+  ratingsGiven      Rating[]        @relation("RatingRater")
+  ratingsReceived   Rating[]        @relation("RatingRatee")
+  chatMessages      ChatMessage[]
+  verifiedMentors   MentorProfile[] @relation("MentorVerifiedBy")
+}
+
+model StudentProfile {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  educationLevel      EducationLevel
+  languagePreferences String[]
+
+  subjects     StudentSubject[]
+  helpRequests HelpRequest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model MentorProfile {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  qualifications String
+  languages      String[]
+  bio            String?
+
+  verificationStatus VerificationStatus @default(PENDING)
+  verifiedAt         DateTime?
+  verifiedByAdminId  String?
+  verifiedByAdmin    User?              @relation("MentorVerifiedBy", fields: [verifiedByAdminId], references: [id])
+
+  subjects         MentorSubject[]
+  availability     Availability[]
+  sessions         Session[]
+  matchSuggestions MatchSuggestion[]
+  serviceHourLogs  ServiceHourLog[]
+  badges           MentorBadge[]
+  endorsements     Endorsement[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([verificationStatus])
+}
+
+// =========================================================
+// Subjects (shared taxonomy for matching & analytics)
+// =========================================================
+
+model Subject {
+  id   String @id @default(uuid())
+  name String @unique
+
+  students     StudentSubject[]
+  mentors      MentorSubject[]
+  helpRequests HelpRequest[]
+  endorsements Endorsement[]
+}
+
+model StudentSubject {
+  studentProfileId String
+  studentProfile   StudentProfile @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
+  subjectId        String
+  subject          Subject        @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@id([studentProfileId, subjectId])
+}
+
+model MentorSubject {
+  mentorProfileId String
+  mentorProfile   MentorProfile @relation(fields: [mentorProfileId], references: [id], onDelete: Cascade)
+  subjectId       String
+  subject         Subject       @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@id([mentorProfileId, subjectId])
+}
+
+// Recurring weekly availability, e.g. dayOfWeek=1 (Monday) 14:00-16:00
+model Availability {
+  id              String        @id @default(uuid())
+  mentorProfileId String
+  mentorProfile   MentorProfile @relation(fields: [mentorProfileId], references: [id], onDelete: Cascade)
+
+  dayOfWeek Int // 0 = Sunday ... 6 = Saturday
+  startTime String // "HH:mm"
+  endTime   String // "HH:mm"
+
+  @@index([mentorProfileId])
+}
+
+// =========================================================
+// Help Requests & Matching
+// =========================================================
+
+model HelpRequest {
+  id               String         @id @default(uuid())
+  studentProfileId String
+  studentProfile   StudentProfile @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
+
+  subjectId String
+  subject   Subject @relation(fields: [subjectId], references: [id])
+
+  topic         String
+  urgencyLevel  UrgencyLevel
+  sessionFormat SessionFormat
+  status        HelpRequestStatus @default(OPEN)
+
+  matchSuggestions MatchSuggestion[]
+  sessions         Session[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([subjectId])
+}
+
+// Ranked mentor suggestions produced by the rule-based matching algorithm
+// (subject, availability, language) for a given help request.
+model MatchSuggestion {
+  id              String        @id @default(uuid())
+  helpRequestId   String
+  helpRequest     HelpRequest   @relation(fields: [helpRequestId], references: [id], onDelete: Cascade)
+  mentorProfileId String
+  mentorProfile   MentorProfile @relation(fields: [mentorProfileId], references: [id], onDelete: Cascade)
+
+  score Float
+  rank  Int
+
+  createdAt DateTime @default(now())
+
+  @@unique([helpRequestId, mentorProfileId])
+}
+
+// =========================================================
+// Sessions
+// =========================================================
+
+model Session {
+  id              String        @id @default(uuid())
+  helpRequestId   String
+  helpRequest     HelpRequest   @relation(fields: [helpRequestId], references: [id], onDelete: Cascade)
+  mentorProfileId String
+  mentorProfile   MentorProfile @relation(fields: [mentorProfileId], references: [id])
+
+  format SessionFormat
+  status SessionStatus @default(SCHEDULED)
+
+  scheduledAt DateTime
+  startedAt   DateTime?
+  endedAt     DateTime?
+
+  confidenceBefore Int? // 1-5 self-rated confidence, logged before the session
+  confidenceAfter  Int? // 1-5 self-rated confidence, logged after the session
+  mentorNotes      String?
+
+  chatMessages   ChatMessage[]
+  ratings        Rating[]
+  serviceHourLog ServiceHourLog?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([mentorProfileId])
+}
+
+model ChatMessage {
+  id        String  @id @default(uuid())
+  sessionId String
+  session   Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  senderId  String
+  sender    User    @relation(fields: [senderId], references: [id])
+
+  content String
+  sentAt  DateTime @default(now())
+
+  @@index([sessionId])
+}
+
+// =========================================================
+// Ratings & Feedback
+// =========================================================
+
+// Covers both directions: student rating a mentor after a session,
+// and a mentor rating a student (including no-show / misconduct flags).
+model Rating {
+  id        String  @id @default(uuid())
+  sessionId String
+  session   Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  raterId String
+  rater   User   @relation("RatingRater", fields: [raterId], references: [id])
+  rateeId String
+  ratee   User   @relation("RatingRatee", fields: [rateeId], references: [id])
+
+  score        Int? // 1-5, optional since a flag-only mentor->student rating may carry no score
+  comment      String?
+  isNoShow     Boolean @default(false)
+  isMisconduct Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@unique([sessionId, raterId])
+}
+
+// =========================================================
+// Gamification & Service Hours
+// =========================================================
+
+model ServiceHourLog {
+  id              String        @id @default(uuid())
+  sessionId       String        @unique
+  session         Session       @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  mentorProfileId String
+  mentorProfile   MentorProfile @relation(fields: [mentorProfileId], references: [id], onDelete: Cascade)
+
+  hours    Decimal  @db.Decimal(5, 2)
+  loggedAt DateTime @default(now())
+
+  @@index([mentorProfileId])
+}
+
+model Badge {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String
+  iconUrl     String?
+  criteria    String // human-readable description of how it's earned
+
+  mentors MentorBadge[]
+}
+
+model MentorBadge {
+  mentorProfileId String
+  mentorProfile   MentorProfile @relation(fields: [mentorProfileId], references: [id], onDelete: Cascade)
+  badgeId         String
+  badge           Badge         @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  earnedAt DateTime @default(now())
+
+  @@id([mentorProfileId, badgeId])
+}
+
+// Skill endorsements given to a mentor (typically by a student after a session).
+model Endorsement {
+  id              String        @id @default(uuid())
+  mentorProfileId String
+  mentorProfile   MentorProfile @relation(fields: [mentorProfileId], references: [id], onDelete: Cascade)
+  endorserId      String
+  subjectId       String
+  subject         Subject       @relation(fields: [subjectId], references: [id])
+
+  message String?
+
+  createdAt DateTime @default(now())
+
+  @@unique([mentorProfileId, endorserId, subjectId])
+}
+
+// =========================================================
+// Notifications (real-time, delivered over Socket.io)
+// =========================================================
+
+model Notification {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation("NotificationUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  type    String
+  message String
+  isRead  Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
 }
