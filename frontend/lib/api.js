@@ -36,3 +36,24 @@ export function fetchMe(token) {
     headers: { Authorization: `Bearer ${token}` },
   });
 }
+
+export function listMentors(token, status) {
+  const query = status ? `?status=${status}` : "";
+  return apiFetch(`/admin/mentors${query}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export function verifyMentor(token, mentorProfileId) {
+  return apiFetch(`/admin/mentors/${mentorProfileId}/verify`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export function rejectMentor(token, mentorProfileId) {
+  return apiFetch(`/admin/mentors/${mentorProfileId}/reject`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
