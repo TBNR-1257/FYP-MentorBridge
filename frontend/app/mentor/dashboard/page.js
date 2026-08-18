@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRequireRole } from "@/lib/auth-context";
 
 export default function MentorDashboardPage() {
@@ -28,9 +29,16 @@ export default function MentorDashboardPage() {
         </p>
       )}
 
-      <p className="text-gray-600">
-        TODO: help request queue, service hours, badges, leaderboard.
-      </p>
+      {profile?.verificationStatus === "VERIFIED" && (
+        <Link
+          href="/mentor/queue"
+          className="rounded-md bg-black px-4 py-2 text-sm text-white hover:bg-gray-800"
+        >
+          View help request queue
+        </Link>
+      )}
+
+      <p className="text-gray-600">TODO: service hours, badges, leaderboard.</p>
     </main>
   );
 }

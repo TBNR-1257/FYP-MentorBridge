@@ -1,7 +1,94 @@
-// TODO: implement once the data model for "students" is finalised.
+const prisma = require("../config/prisma");
+const HttpError = require("../utils/HttpError");
+const { createHelpRequestSchema, selectMentorSchema } = require("../schemas/helpRequest.schema");
+const helpRequestService = require("../services/helpRequest.service");
 
-async function list(req, res) {
-  res.status(501).json({ error: "Not implemented yet" });
+async function getOwnStudentProfile(userId) {
+  const profile = await prisma.studentProfile.findUnique({ where: { userId } });
+  if (!profile) {
+    throw new HttpError(404, "Student profile not found");
+  }
+  return profile;
 }
 
-module.exports = { list };
+async function createHelpRequest(req, res) {
+  const parsed = createHelpRequestSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.issues.map((i) => i.message).join(", ") });
+  }
+  const data = parsed.data;
+
+  const studentProfile = await getOwnStudentProfile(req.user.id);
+  const subject = await helpRequestService.findOrCreateSubject(data.subject);
+
+  const helpRequest = await prisma.helpRequest.create({
+    data: {
+      studentProfileId: studentProfile.id,
+      subjectId: subject.id,
+      topic: data.topic,
+      urgencyLevel: data.urgencyLevel,
+      sessionFormat: data.sessionFormat,
+      preferredDayOfWeek: data.preferredDayOfWeek,
+      preferredStartTime: data.preferredStartTime,
+      preferredEndTime: data.preferredEndTime,
+    },
+    include: { subject: true },
+  });
+
+  const matches = await helpRequestService.generateMatches(helpRequest, studentProfile);
+
+  res.status(201).json({ helpRequest, matches });
+}
+
+async function listMyHelpRequests(req, res) {
+  const studentProfile = await getOwnStudentProfile(req.user.id);
+
+  const helpRequests = await prisma.helpRequest.findMany({
+    where: { studentProfileId: studentProfile.id },
+    include: { subject: true, sessions: true },
+    orderBy: { createdAt: "desc" },
+  });
+
+  res.json({ helpRequests });
+}
+
+async function getHelpRequest(req, res) {
+  const studentProfile = await getOwnStudentProfile(req.user.id);
+
+  const helpRequest = await prisma.helpRequest.findUnique({
+    where: { id: req.params.id },
+    include: {
+      subject: true,
+      sessions: true,
+      matchSuggestions: {
+        orderBy: { rank: "asc" },
+        include: { mentorProfile: { include: { user: { select: { id: true, name: true } } } } },
+      },
+    },
+  });
+
+  if (!helpRequest || helpRequest.studentProfileId !== studentProfile.id) {
+    return res.status(404).json({ error: "Help request not found" });
+  }
+
+  res.json({ helpRequest });
+}
+
+async function selectMentor(req, res) {
+  const parsed = selectMentorSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.issues.map((i) => i.message).join(", ") });
+  }
+
+  const studentProfile = await getOwnStudentProfile(req.user.id);
+  const helpRequest = await prisma.helpRequest.findUnique({ where: { id: req.params.id } });
+
+  if (!helpRequest || helpRequest.studentProfileId !== studentProfile.id) {
+    return res.status(404).json({ error: "Help request not found" });
+  }
+
+  const session = await helpRequestService.confirmMatch(helpRequest.id, parsed.data.mentorProfileId);
+  res.status(201).json({ session });
+}
+
+module.exports = { createHelpRequest, listMyHelpRequests, getHelpRequest, selectMentor };

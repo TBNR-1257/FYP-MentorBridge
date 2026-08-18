@@ -191,6 +191,12 @@ model HelpRequest {
   sessionFormat SessionFormat
   status        HelpRequestStatus @default(OPEN)
 
+  // Preferred slot for the session, matched against MentorProfile.availability
+  // by the rule-based matching algorithm.
+  preferredDayOfWeek Int // 0 = Sunday ... 6 = Saturday
+  preferredStartTime String // "HH:mm"
+  preferredEndTime   String // "HH:mm"
+
   matchSuggestions MatchSuggestion[]
   sessions         Session[]
 

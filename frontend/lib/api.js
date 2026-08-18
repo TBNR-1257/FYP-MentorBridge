@@ -57,3 +57,44 @@ export function rejectMentor(token, mentorProfileId) {
     headers: { Authorization: `Bearer ${token}` },
   });
 }
+
+export function createHelpRequest(token, payload) {
+  return apiFetch("/students/help-requests", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+}
+
+export function listMyHelpRequests(token) {
+  return apiFetch("/students/help-requests", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export function getHelpRequest(token, id) {
+  return apiFetch(`/students/help-requests/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export function selectMentor(token, id, mentorProfileId) {
+  return apiFetch(`/students/help-requests/${id}/select-mentor`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ mentorProfileId }),
+  });
+}
+
+export function listMentorQueue(token) {
+  return apiFetch("/mentors/help-requests/queue", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export function acceptHelpRequest(token, id) {
+  return apiFetch(`/mentors/help-requests/${id}/accept`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}

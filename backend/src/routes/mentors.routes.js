@@ -1,10 +1,13 @@
 const express = require("express");
 const asyncHandler = require("../utils/asyncHandler");
-const { requireAuth } = require("../middleware/auth.middleware");
+const { requireAuth, requireRole } = require("../middleware/auth.middleware");
 const controller = require("../controllers/mentors.controller");
 
 const router = express.Router();
 
-router.get("/", requireAuth, asyncHandler(controller.list));
+router.use(requireAuth, requireRole("MENTOR"));
+
+router.get("/help-requests/queue", asyncHandler(controller.listQueue));
+router.post("/help-requests/:id/accept", asyncHandler(controller.acceptHelpRequest));
 
 module.exports = router;

@@ -1,9 +1,24 @@
 "use client";
 
-import { useRequireRole } from "@/lib/auth-context";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRequireRole, useAuth } from "@/lib/auth-context";
+import * as api from "@/lib/api";
 
 export default function StudentDashboardPage() {
   const { user, loading } = useRequireRole("STUDENT");
+  const { token } = useAuth();
+
+  const [helpRequests, setHelpRequests] = useState([]);
+  const [fetching, setFetching] = useState(true);
+
+  useEffect(() => {
+    if (loading || !token) return;
+    api
+      .listMyHelpRequests(token)
+      .then(({ helpRequests }) => setHelpRequests(helpRequests))
+      .finally(() => setFetching(false));
+  }, [loading, token]);
 
   if (loading) return null;
 
@@ -21,9 +36,39 @@ export default function StudentDashboardPage() {
         </dl>
       </div>
 
-      <p className="text-gray-600">
-        TODO: post help requests, view mentor matches, session history, progress tracking.
-      </p>
+      <section className="w-full max-w-md">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-lg font-medium">Your help requests</h2>
+          <Link
+            href="/student/help-requests/new"
+            className="rounded-md bg-black px-3 py-1.5 text-sm text-white hover:bg-gray-800"
+          >
+            + New request
+          </Link>
+        </div>
+
+        {fetching ? (
+          <p className="text-sm text-gray-500">Loading…</p>
+        ) : helpRequests.length === 0 ? (
+          <p className="text-sm text-gray-500">You haven&apos;t posted any help requests yet.</p>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {helpRequests.map((hr) => (
+              <li key={hr.id}>
+                <Link
+                  href={`/student/help-requests/${hr.id}`}
+                  className="block rounded-md border border-gray-200 p-3 text-sm hover:bg-gray-50"
+                >
+                  <span className="font-medium">{hr.topic}</span> · {hr.subject.name} ·{" "}
+                  <span className="text-gray-500">{hr.status}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <p className="text-gray-600">TODO: session history, progress tracking.</p>
     </main>
   );
 }
