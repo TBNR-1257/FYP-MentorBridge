@@ -86,15 +86,14 @@ model User {
   verifiedMentors   MentorProfile[] @relation("MentorVerifiedBy")
 }
 
+// Deliberately minimal: subject, education level, and language preference are
+// specified per help request rather than fixed on the profile, since a student
+// may need help in different subjects/levels/languages on different occasions.
 model StudentProfile {
   id     String @id @default(uuid())
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  educationLevel      EducationLevel
-  languagePreferences String[]
-
-  subjects     StudentSubject[]
   helpRequests HelpRequest[]
 
   createdAt DateTime @default(now())
@@ -137,19 +136,9 @@ model Subject {
   id   String @id @default(uuid())
   name String @unique
 
-  students     StudentSubject[]
   mentors      MentorSubject[]
   helpRequests HelpRequest[]
   endorsements Endorsement[]
-}
-
-model StudentSubject {
-  studentProfileId String
-  studentProfile   StudentProfile @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
-  subjectId        String
-  subject          Subject        @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-
-  @@id([studentProfileId, subjectId])
 }
 
 model MentorSubject {
@@ -190,6 +179,10 @@ model HelpRequest {
   urgencyLevel  UrgencyLevel
   sessionFormat SessionFormat
   status        HelpRequestStatus @default(OPEN)
+
+  // Specified per request rather than fixed on StudentProfile.
+  educationLevel      EducationLevel
+  languagePreferences String[]
 
   // Preferred slot for the session, matched against MentorProfile.availability
   // by the rule-based matching algorithm.

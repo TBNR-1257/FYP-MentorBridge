@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useRequireRole, useAuth } from "@/lib/auth-context";
+import SubjectCombobox from "@/components/SubjectCombobox";
 import * as api from "@/lib/api";
 
+const EDUCATION_LEVELS = ["PRIMARY", "SECONDARY", "UNDERGRADUATE", "POSTGRADUATE", "OTHER"];
 const URGENCY_LEVELS = ["LOW", "MEDIUM", "HIGH"];
 const SESSION_FORMATS = [
   { value: "TEXT_CHAT", label: "Text chat" },
@@ -21,6 +23,13 @@ const DAYS = [
   { value: 6, label: "Saturday" },
 ];
 
+function csvToList(value) {
+  return value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 export default function NewHelpRequestPage() {
   const { loading } = useRequireRole("STUDENT");
   const { token } = useAuth();
@@ -28,6 +37,8 @@ export default function NewHelpRequestPage() {
 
   const [subject, setSubject] = useState("");
   const [topic, setTopic] = useState("");
+  const [educationLevel, setEducationLevel] = useState(EDUCATION_LEVELS[0]);
+  const [languagePreferences, setLanguagePreferences] = useState("");
   const [urgencyLevel, setUrgencyLevel] = useState("MEDIUM");
   const [sessionFormat, setSessionFormat] = useState("VIDEO_CALL");
   const [preferredDayOfWeek, setPreferredDayOfWeek] = useState(1);
@@ -46,6 +57,8 @@ export default function NewHelpRequestPage() {
       const { helpRequest } = await api.createHelpRequest(token, {
         subject,
         topic,
+        educationLevel,
+        languagePreferences: csvToList(languagePreferences),
         urgencyLevel,
         sessionFormat,
         preferredDayOfWeek: Number(preferredDayOfWeek),
@@ -66,12 +79,12 @@ export default function NewHelpRequestPage() {
 
       <form onSubmit={handleSubmit} className="flex w-full max-w-md flex-col gap-4">
         <Field label="Subject">
-          <input
+          <SubjectCombobox
+            id="help-request-subject"
             required
-            placeholder="Mathematics"
+            placeholder="Search or add a subject…"
             value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-2"
+            onChange={setSubject}
           />
         </Field>
 
@@ -81,6 +94,30 @@ export default function NewHelpRequestPage() {
             placeholder="Quadratic equations"
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
+            className="rounded-md border border-gray-300 px-3 py-2"
+          />
+        </Field>
+
+        <Field label="Your education level">
+          <select
+            value={educationLevel}
+            onChange={(e) => setEducationLevel(e.target.value)}
+            className="rounded-md border border-gray-300 px-3 py-2"
+          >
+            {EDUCATION_LEVELS.map((level) => (
+              <option key={level} value={level}>
+                {level}
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        <Field label="Language preferences (comma-separated)">
+          <input
+            required
+            placeholder="English, Malay"
+            value={languagePreferences}
+            onChange={(e) => setLanguagePreferences(e.target.value)}
             className="rounded-md border border-gray-300 px-3 py-2"
           />
         </Field>

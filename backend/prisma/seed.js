@@ -2,8 +2,8 @@ require("dotenv").config();
 const bcrypt = require("bcryptjs");
 const prisma = require("../src/config/prisma");
 
-const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL || "admin@mentorbridge.local";
-const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD || "admin12345";
+const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL || "admin@mail.com";
+const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD || "admin_1234";
 
 async function main() {
   const existing = await prisma.user.findUnique({ where: { email: ADMIN_EMAIL } });

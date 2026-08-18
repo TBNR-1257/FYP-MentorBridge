@@ -2,26 +2,20 @@ const bcrypt = require("bcryptjs");
 const prisma = require("../config/prisma");
 const { signToken } = require("../utils/jwt");
 const { registerSchema, loginSchema } = require("../schemas/auth.schema");
+const { resolveSubjects } = require("../services/subject.service");
 
 const SALT_ROUNDS = 10;
 
-const WITH_PROFILE = { include: { studentProfile: true, mentorProfile: true } };
+const WITH_PROFILE = {
+  include: {
+    studentProfile: true,
+    mentorProfile: { include: { subjects: { include: { subject: true } }, availability: true } },
+  },
+};
 
 function toPublicUser(user) {
   const { passwordHash, ...publicUser } = user;
   return publicUser;
-}
-
-async function findOrCreateSubjects(names) {
-  return Promise.all(
-    names.map((name) =>
-      prisma.subject.upsert({
-        where: { name },
-        update: {},
-        create: { name },
-      })
-    )
-  );
 }
 
 async function register(req, res) {
@@ -37,7 +31,7 @@ async function register(req, res) {
   }
 
   const passwordHash = await bcrypt.hash(data.password, SALT_ROUNDS);
-  const subjects = await findOrCreateSubjects(data.subjects);
+  const subjects = data.role === "MENTOR" ? await resolveSubjects(data.subjects) : [];
 
   const user = await prisma.$transaction(async (tx) => {
     const createdUser = await tx.user.create({
@@ -50,14 +44,7 @@ async function register(req, res) {
     });
 
     if (data.role === "STUDENT") {
-      await tx.studentProfile.create({
-        data: {
-          userId: createdUser.id,
-          educationLevel: data.educationLevel,
-          languagePreferences: data.languagePreferences,
-          subjects: { create: subjects.map((s) => ({ subjectId: s.id })) },
-        },
-      });
+      await tx.studentProfile.create({ data: { userId: createdUser.id } });
     } else {
       await tx.mentorProfile.create({
         data: {

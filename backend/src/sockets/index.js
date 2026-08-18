@@ -1,12 +1,56 @@
-// Real-time layer for in-app chat and live session notifications.
-// TODO: flesh out event handlers once the session/chat data model exists.
+const prisma = require("../config/prisma");
+const { verifyToken } = require("../utils/jwt");
+
+function socketRoom(sessionId) {
+  return `session:${sessionId}`;
+}
+
+// A socket may only join a session it's actually a participant in (the student
+// who posted the underlying help request, or the assigned mentor).
+async function isParticipant(sessionId, userId) {
+  const session = await prisma.session.findUnique({
+    where: { id: sessionId },
+    include: {
+      mentorProfile: { select: { userId: true } },
+      helpRequest: { include: { studentProfile: { select: { userId: true } } } },
+    },
+  });
+  if (!session) return false;
+  return session.mentorProfile.userId === userId || session.helpRequest.studentProfile.userId === userId;
+}
 
 function registerSocketHandlers(io) {
-  io.on("connection", (socket) => {
-    console.log(`Socket connected: ${socket.id}`);
+  io.use((socket, next) => {
+    try {
+      socket.data.user = verifyToken(socket.handshake.auth?.token);
+      next();
+    } catch {
+      next(new Error("Authentication failed"));
+    }
+  });
 
-    socket.on("disconnect", () => {
-      console.log(`Socket disconnected: ${socket.id}`);
+  io.on("connection", (socket) => {
+    socket.on("join_session", async ({ sessionId }, ack) => {
+      if (!(await isParticipant(sessionId, socket.data.user.id))) {
+        return ack?.({ error: "Not a participant in this session" });
+      }
+      socket.join(socketRoom(sessionId));
+      ack?.({ ok: true });
+    });
+
+    socket.on("send_message", async ({ sessionId, content }, ack) => {
+      if (!content?.trim()) return ack?.({ error: "Message cannot be empty" });
+      if (!(await isParticipant(sessionId, socket.data.user.id))) {
+        return ack?.({ error: "Not a participant in this session" });
+      }
+
+      const message = await prisma.chatMessage.create({
+        data: { sessionId, senderId: socket.data.user.id, content: content.trim() },
+        include: { sender: { select: { id: true, name: true } } },
+      });
+
+      io.to(socketRoom(sessionId)).emit("new_message", message);
+      ack?.({ ok: true, message });
     });
   });
 }

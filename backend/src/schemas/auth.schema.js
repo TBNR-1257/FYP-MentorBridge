@@ -1,6 +1,5 @@
 const { z } = require("zod");
-
-const EDUCATION_LEVELS = ["PRIMARY", "SECONDARY", "UNDERGRADUATE", "POSTGRADUATE", "OTHER"];
+const { availabilitySlotSchema } = require("./common.schema");
 
 const baseFields = {
   email: z.string().email(),
@@ -8,18 +7,11 @@ const baseFields = {
   name: z.string().min(1),
 };
 
-const availabilitySlotSchema = z.object({
-  dayOfWeek: z.number().int().min(0).max(6),
-  startTime: z.string().regex(/^\d{2}:\d{2}$/, "startTime must be in HH:mm format"),
-  endTime: z.string().regex(/^\d{2}:\d{2}$/, "endTime must be in HH:mm format"),
-});
-
+// Students don't specify subject, education level, or language preference at
+// signup — those are captured per help request instead.
 const studentRegisterSchema = z.object({
   ...baseFields,
   role: z.literal("STUDENT"),
-  educationLevel: z.enum(EDUCATION_LEVELS),
-  languagePreferences: z.array(z.string()).min(1),
-  subjects: z.array(z.string()).min(1),
 });
 
 const mentorRegisterSchema = z.object({

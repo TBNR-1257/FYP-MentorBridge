@@ -6,4 +6,9 @@ function signToken(user) {
   });
 }
 
-module.exports = { signToken };
+function verifyToken(token) {
+  const payload = jwt.verify(token, process.env.JWT_SECRET);
+  return { id: payload.sub, role: payload.role };
+}
+
+module.exports = { signToken, verifyToken };

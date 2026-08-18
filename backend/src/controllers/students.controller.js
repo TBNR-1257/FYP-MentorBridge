@@ -2,6 +2,7 @@ const prisma = require("../config/prisma");
 const HttpError = require("../utils/HttpError");
 const { createHelpRequestSchema, selectMentorSchema } = require("../schemas/helpRequest.schema");
 const helpRequestService = require("../services/helpRequest.service");
+const { resolveSubject } = require("../services/subject.service");
 
 async function getOwnStudentProfile(userId) {
   const profile = await prisma.studentProfile.findUnique({ where: { userId } });
@@ -19,7 +20,7 @@ async function createHelpRequest(req, res) {
   const data = parsed.data;
 
   const studentProfile = await getOwnStudentProfile(req.user.id);
-  const subject = await helpRequestService.findOrCreateSubject(data.subject);
+  const subject = await resolveSubject(data.subject);
 
   const helpRequest = await prisma.helpRequest.create({
     data: {
@@ -28,6 +29,8 @@ async function createHelpRequest(req, res) {
       topic: data.topic,
       urgencyLevel: data.urgencyLevel,
       sessionFormat: data.sessionFormat,
+      educationLevel: data.educationLevel,
+      languagePreferences: data.languagePreferences,
       preferredDayOfWeek: data.preferredDayOfWeek,
       preferredStartTime: data.preferredStartTime,
       preferredEndTime: data.preferredEndTime,
@@ -35,7 +38,7 @@ async function createHelpRequest(req, res) {
     include: { subject: true },
   });
 
-  const matches = await helpRequestService.generateMatches(helpRequest, studentProfile);
+  const matches = await helpRequestService.generateMatches(helpRequest);
 
   res.status(201).json({ helpRequest, matches });
 }

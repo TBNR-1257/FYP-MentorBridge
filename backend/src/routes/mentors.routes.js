@@ -9,5 +9,6 @@ router.use(requireAuth, requireRole("MENTOR"));
 
 router.get("/help-requests/queue", asyncHandler(controller.listQueue));
 router.post("/help-requests/:id/accept", asyncHandler(controller.acceptHelpRequest));
+router.patch("/profile", asyncHandler(controller.updateProfile));
 
 module.exports = router;

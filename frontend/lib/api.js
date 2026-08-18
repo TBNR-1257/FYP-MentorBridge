@@ -17,6 +17,18 @@ export async function apiFetch(path, options = {}) {
   return res.json();
 }
 
+export function listSubjects() {
+  return apiFetch("/subjects");
+}
+
+export function updateMentorProfile(token, payload) {
+  return apiFetch("/mentors/profile", {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+}
+
 export function login(email, password) {
   return apiFetch("/auth/login", {
     method: "POST",
@@ -96,5 +108,48 @@ export function acceptHelpRequest(token, id) {
   return apiFetch(`/mentors/help-requests/${id}/accept`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export function listMySessions(token) {
+  return apiFetch("/sessions", { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export function getSession(token, id) {
+  return apiFetch(`/sessions/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export function listSessionMessages(token, id) {
+  return apiFetch(`/sessions/${id}/messages`, { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export function startSession(token, id) {
+  return apiFetch(`/sessions/${id}/start`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export function setSessionNotes(token, id, mentorNotes) {
+  return apiFetch(`/sessions/${id}/notes`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ mentorNotes }),
+  });
+}
+
+export function setSessionConfidence(token, id, payload) {
+  return apiFetch(`/sessions/${id}/confidence`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+}
+
+export function completeSession(token, id, outcome) {
+  return apiFetch(`/sessions/${id}/complete`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ outcome }),
   });
 }

@@ -17,8 +17,8 @@ function timeRangesOverlap(aStart, aEnd, bStart, bEnd) {
   return timeToMinutes(aStart) < timeToMinutes(bEnd) && timeToMinutes(bStart) < timeToMinutes(aEnd);
 }
 
-function hasLanguageOverlap(studentLanguages, mentorLanguages) {
-  return studentLanguages.some((lang) => mentorLanguages.includes(lang));
+function hasLanguageOverlap(requestLanguages, mentorLanguages) {
+  return requestLanguages.some((lang) => mentorLanguages.includes(lang));
 }
 
 function hasAvailabilityOverlap(mentorAvailability, request) {
@@ -31,11 +31,11 @@ function hasAvailabilityOverlap(mentorAvailability, request) {
 
 // mentors: MentorProfile[] already filtered to those teaching the request's subject,
 // each with `languages`, `availability`, and `activeSessionCount` loaded.
-function scoreMentors(mentors, student, request) {
+function scoreMentors(mentors, request) {
   return mentors
     .map((mentor) => {
       let score = BASE_QUALIFYING_POINTS;
-      if (hasLanguageOverlap(student.languagePreferences, mentor.languages)) {
+      if (hasLanguageOverlap(request.languagePreferences, mentor.languages)) {
         score += LANGUAGE_MATCH_POINTS;
       }
       if (hasAvailabilityOverlap(mentor.availability, request)) {

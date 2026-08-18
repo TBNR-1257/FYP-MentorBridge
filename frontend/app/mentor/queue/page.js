@@ -73,8 +73,11 @@ export default function MentorQueuePage() {
                 <div>
                   <p className="font-medium">{match.helpRequest.topic}</p>
                   <p className="text-gray-500">
-                    {match.helpRequest.subject.name} · {match.helpRequest.urgencyLevel} urgency ·{" "}
-                    {match.helpRequest.sessionFormat}
+                    {match.helpRequest.subject.name} · {match.helpRequest.educationLevel} ·{" "}
+                    {match.helpRequest.urgencyLevel} urgency · {match.helpRequest.sessionFormat}
+                  </p>
+                  <p className="text-gray-500">
+                    Language: {match.helpRequest.languagePreferences.join(", ")}
                   </p>
                   <p className="text-gray-500">Student: {match.helpRequest.studentProfile.user.name}</p>
                   <p className="text-gray-500">Match score: {match.score}</p>

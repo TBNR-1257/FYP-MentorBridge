@@ -4,27 +4,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth, dashboardPathForRole } from "@/lib/auth-context";
-
-const EDUCATION_LEVELS = ["PRIMARY", "SECONDARY", "UNDERGRADUATE", "POSTGRADUATE", "OTHER"];
-const DAYS = [
-  { value: 0, label: "Sunday" },
-  { value: 1, label: "Monday" },
-  { value: 2, label: "Tuesday" },
-  { value: 3, label: "Wednesday" },
-  { value: 4, label: "Thursday" },
-  { value: 5, label: "Friday" },
-  { value: 6, label: "Saturday" },
-];
+import AvailabilityEditor, { emptySlot } from "@/components/AvailabilityEditor";
+import SubjectTagSelect from "@/components/SubjectTagSelect";
 
 function csvToList(value) {
   return value
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean);
-}
-
-function emptySlot() {
-  return { dayOfWeek: 1, startTime: "14:00", endTime: "16:00" };
 }
 
 export default function RegisterPage() {
@@ -39,50 +26,30 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [subjects, setSubjects] = useState("");
+  const [subjects, setSubjects] = useState([]);
   const [languages, setLanguages] = useState("");
-  const [educationLevel, setEducationLevel] = useState(EDUCATION_LEVELS[0]);
   const [qualifications, setQualifications] = useState("");
   const [availability, setAvailability] = useState([emptySlot()]);
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
-
-  function updateSlot(index, field, value) {
-    setAvailability((slots) =>
-      slots.map((slot, i) => (i === index ? { ...slot, [field]: value } : slot))
-    );
-  }
-
-  function addSlot() {
-    setAvailability((slots) => [...slots, emptySlot()]);
-  }
-
-  function removeSlot(index) {
-    setAvailability((slots) => slots.filter((_, i) => i !== index));
-  }
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
 
-    const basePayload = { email, password, name, role, subjects: csvToList(subjects) };
-
     const payload =
       role === "STUDENT"
-        ? {
-            ...basePayload,
-            educationLevel,
-            languagePreferences: csvToList(languages),
-          }
+        ? { email, password, name, role }
         : {
-            ...basePayload,
+            email,
+            password,
+            name,
+            role,
             qualifications,
             languages: csvToList(languages),
-            availability: availability.map((slot) => ({
-              ...slot,
-              dayOfWeek: Number(slot.dayOfWeek),
-            })),
+            subjects,
+            availability,
           };
 
     try {
@@ -147,40 +114,10 @@ export default function RegisterPage() {
           />
         </Field>
 
-        <Field label="Subjects (comma-separated)">
-          <input
-            required
-            placeholder="Mathematics, Physics"
-            value={subjects}
-            onChange={(e) => setSubjects(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-2"
-          />
-        </Field>
-
-        <Field label={role === "STUDENT" ? "Language preferences (comma-separated)" : "Languages spoken (comma-separated)"}>
-          <input
-            required
-            placeholder="English, Malay"
-            value={languages}
-            onChange={(e) => setLanguages(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-2"
-          />
-        </Field>
-
         {role === "STUDENT" ? (
-          <Field label="Education level">
-            <select
-              value={educationLevel}
-              onChange={(e) => setEducationLevel(e.target.value)}
-              className="rounded-md border border-gray-300 px-3 py-2"
-            >
-              {EDUCATION_LEVELS.map((level) => (
-                <option key={level} value={level}>
-                  {level}
-                </option>
-              ))}
-            </select>
-          </Field>
+          <p className="text-sm text-gray-500">
+            That&apos;s it — you&apos;ll specify subject, level, and language when you post a help request.
+          </p>
         ) : (
           <>
             <Field label="Qualifications">
@@ -193,53 +130,21 @@ export default function RegisterPage() {
               />
             </Field>
 
-            <fieldset className="flex flex-col gap-2">
-              <legend className="text-sm font-medium">Availability</legend>
-              {availability.map((slot, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <select
-                    value={slot.dayOfWeek}
-                    onChange={(e) => updateSlot(index, "dayOfWeek", e.target.value)}
-                    className="rounded-md border border-gray-300 px-2 py-1.5 text-sm"
-                  >
-                    {DAYS.map((day) => (
-                      <option key={day.value} value={day.value}>
-                        {day.label}
-                      </option>
-                    ))}
-                  </select>
-                  <input
-                    type="time"
-                    value={slot.startTime}
-                    onChange={(e) => updateSlot(index, "startTime", e.target.value)}
-                    className="rounded-md border border-gray-300 px-2 py-1.5 text-sm"
-                  />
-                  <span className="text-gray-500">to</span>
-                  <input
-                    type="time"
-                    value={slot.endTime}
-                    onChange={(e) => updateSlot(index, "endTime", e.target.value)}
-                    className="rounded-md border border-gray-300 px-2 py-1.5 text-sm"
-                  />
-                  {availability.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeSlot(index)}
-                      className="text-sm text-gray-500 hover:text-red-600"
-                    >
-                      Remove
-                    </button>
-                  )}
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={addSlot}
-                className="self-start text-sm text-gray-700 underline"
-              >
-                + Add another slot
-              </button>
-            </fieldset>
+            <Field label="Languages spoken (comma-separated)">
+              <input
+                required
+                placeholder="English, Malay"
+                value={languages}
+                onChange={(e) => setLanguages(e.target.value)}
+                className="rounded-md border border-gray-300 px-3 py-2"
+              />
+            </Field>
+
+            <Field label="Subjects">
+              <SubjectTagSelect value={subjects} onChange={setSubjects} placeholder="Search or add a subject…" />
+            </Field>
+
+            <AvailabilityEditor value={availability} onChange={setAvailability} />
           </>
         )}
 
@@ -247,7 +152,7 @@ export default function RegisterPage() {
 
         <button
           type="submit"
-          disabled={submitting}
+          disabled={submitting || (role === "MENTOR" && subjects.length === 0)}
           className="rounded-md bg-black px-4 py-2 text-white hover:bg-gray-800 disabled:opacity-50"
         >
           {submitting ? "Creating account…" : "Sign up"}

@@ -22,8 +22,6 @@ export default function StudentDashboardPage() {
 
   if (loading) return null;
 
-  const profile = user.studentProfile;
-
   return (
     <main className="flex flex-1 flex-col items-center gap-6 px-6 py-10">
       <h1 className="text-2xl font-semibold">Welcome, {user.name}</h1>
@@ -31,8 +29,6 @@ export default function StudentDashboardPage() {
       <div className="w-full max-w-md rounded-md border border-gray-200 p-4 text-sm">
         <dl className="flex flex-col gap-2">
           <Row label="Email" value={user.email} />
-          <Row label="Education level" value={profile?.educationLevel} />
-          <Row label="Language preferences" value={profile?.languagePreferences?.join(", ")} />
         </dl>
       </div>
 
@@ -56,10 +52,10 @@ export default function StudentDashboardPage() {
             {helpRequests.map((hr) => (
               <li key={hr.id}>
                 <Link
-                  href={`/student/help-requests/${hr.id}`}
+                  href={hr.sessions[0] ? `/sessions/${hr.sessions[0].id}` : `/student/help-requests/${hr.id}`}
                   className="block rounded-md border border-gray-200 p-3 text-sm hover:bg-gray-50"
                 >
-                  <span className="font-medium">{hr.topic}</span> · {hr.subject.name} ·{" "}
+                  <span className="font-medium">{hr.topic}</span> · {hr.subject.name} · {hr.educationLevel} ·{" "}
                   <span className="text-gray-500">{hr.status}</span>
                 </Link>
               </li>
@@ -68,7 +64,7 @@ export default function StudentDashboardPage() {
         )}
       </section>
 
-      <p className="text-gray-600">TODO: session history, progress tracking.</p>
+      <p className="text-gray-600">TODO: progress tracking over time.</p>
     </main>
   );
 }

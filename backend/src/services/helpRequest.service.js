@@ -1,14 +1,11 @@
 const prisma = require("../config/prisma");
 const HttpError = require("../utils/HttpError");
 const { scoreMentors, nextOccurrence } = require("../utils/matching");
-
-async function findOrCreateSubject(name) {
-  return prisma.subject.upsert({ where: { name }, update: {}, create: { name } });
-}
+const { resolveSubject } = require("./subject.service");
 
 // Scores every VERIFIED mentor who teaches the request's subject, persists the
 // ranking as MatchSuggestion rows, and returns them with mentor details attached.
-async function generateMatches(helpRequest, studentProfile) {
+async function generateMatches(helpRequest) {
   const eligibleMentors = await prisma.mentorProfile.findMany({
     where: {
       verificationStatus: "VERIFIED",
@@ -28,7 +25,6 @@ async function generateMatches(helpRequest, studentProfile) {
       availability: mentor.availability,
       activeSessionCount: mentor.sessions.length,
     })),
-    studentProfile,
     helpRequest
   );
 
@@ -84,4 +80,4 @@ async function confirmMatch(helpRequestId, mentorProfileId) {
   });
 }
 
-module.exports = { findOrCreateSubject, generateMatches, confirmMatch };
+module.exports = { generateMatches, confirmMatch };

@@ -5,6 +5,14 @@ const controller = require("../controllers/sessions.controller");
 
 const router = express.Router();
 
-router.get("/", requireAuth, asyncHandler(controller.list));
+router.use(requireAuth);
+
+router.get("/", asyncHandler(controller.list));
+router.get("/:id", asyncHandler(controller.detail));
+router.get("/:id/messages", asyncHandler(controller.messages));
+router.post("/:id/start", asyncHandler(controller.start));
+router.patch("/:id/notes", asyncHandler(controller.notes));
+router.patch("/:id/confidence", asyncHandler(controller.confidence));
+router.post("/:id/complete", asyncHandler(controller.complete));
 
 module.exports = router;
