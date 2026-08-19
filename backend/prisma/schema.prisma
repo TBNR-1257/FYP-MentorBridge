@@ -45,6 +45,7 @@ enum SessionFormat {
 
 enum HelpRequestStatus {
   OPEN
+  REQUESTED
   MATCHED
   IN_PROGRESS
   COMPLETED
@@ -114,13 +115,14 @@ model MentorProfile {
   verifiedByAdminId  String?
   verifiedByAdmin    User?              @relation("MentorVerifiedBy", fields: [verifiedByAdminId], references: [id])
 
-  subjects         MentorSubject[]
-  availability     Availability[]
-  sessions         Session[]
-  matchSuggestions MatchSuggestion[]
-  serviceHourLogs  ServiceHourLog[]
-  badges           MentorBadge[]
-  endorsements     Endorsement[]
+  subjects              MentorSubject[]
+  availability          Availability[]
+  sessions              Session[]
+  matchSuggestions      MatchSuggestion[]
+  serviceHourLogs       ServiceHourLog[]
+  badges                MentorBadge[]
+  endorsements          Endorsement[]
+  requestedHelpRequests HelpRequest[]     @relation("HelpRequestRequestedMentor")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -179,6 +181,11 @@ model HelpRequest {
   urgencyLevel  UrgencyLevel
   sessionFormat SessionFormat
   status        HelpRequestStatus @default(OPEN)
+
+  // Set when a student requests a specific mentor from their ranked suggestions;
+  // only that mentor can act on the request until they accept or decline it.
+  requestedMentorProfileId String?
+  requestedMentorProfile   MentorProfile? @relation("HelpRequestRequestedMentor", fields: [requestedMentorProfileId], references: [id])
 
   // Specified per request rather than fixed on StudentProfile.
   educationLevel      EducationLevel

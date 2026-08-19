@@ -66,18 +66,18 @@ export default function RegisterPage() {
     <main className="flex flex-1 flex-col items-center justify-center gap-6 px-6 py-10">
       <h1 className="text-2xl font-semibold">Sign up</h1>
 
-      <div className="flex rounded-md border border-gray-300 p-1 text-sm">
+      <div className="flex rounded-lg border border-stone-300 bg-white p-1 text-sm">
         <button
           type="button"
           onClick={() => setRole("STUDENT")}
-          className={`rounded px-4 py-1.5 ${role === "STUDENT" ? "bg-black text-white" : ""}`}
+          className={`rounded px-4 py-1.5 ${role === "STUDENT" ? "bg-teal-600 text-white" : ""}`}
         >
           I&apos;m a Student
         </button>
         <button
           type="button"
           onClick={() => setRole("MENTOR")}
-          className={`rounded px-4 py-1.5 ${role === "MENTOR" ? "bg-black text-white" : ""}`}
+          className={`rounded px-4 py-1.5 ${role === "MENTOR" ? "bg-teal-600 text-white" : ""}`}
         >
           I&apos;m a Mentor
         </button>
@@ -89,7 +89,7 @@ export default function RegisterPage() {
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-2"
+            className="rounded-lg border border-stone-300 bg-white px-3 py-2"
           />
         </Field>
 
@@ -99,7 +99,7 @@ export default function RegisterPage() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-2"
+            className="rounded-lg border border-stone-300 bg-white px-3 py-2"
           />
         </Field>
 
@@ -110,12 +110,12 @@ export default function RegisterPage() {
             minLength={8}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-2"
+            className="rounded-lg border border-stone-300 bg-white px-3 py-2"
           />
         </Field>
 
         {role === "STUDENT" ? (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-stone-500">
             That&apos;s it — you&apos;ll specify subject, level, and language when you post a help request.
           </p>
         ) : (
@@ -126,7 +126,7 @@ export default function RegisterPage() {
                 rows={3}
                 value={qualifications}
                 onChange={(e) => setQualifications(e.target.value)}
-                className="rounded-md border border-gray-300 px-3 py-2"
+                className="rounded-lg border border-stone-300 bg-white px-3 py-2"
               />
             </Field>
 
@@ -136,7 +136,7 @@ export default function RegisterPage() {
                 placeholder="English, Malay"
                 value={languages}
                 onChange={(e) => setLanguages(e.target.value)}
-                className="rounded-md border border-gray-300 px-3 py-2"
+                className="rounded-lg border border-stone-300 bg-white px-3 py-2"
               />
             </Field>
 
@@ -153,13 +153,13 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={submitting || (role === "MENTOR" && subjects.length === 0)}
-          className="rounded-md bg-black px-4 py-2 text-white hover:bg-gray-800 disabled:opacity-50"
+          className="rounded-lg bg-teal-600 px-4 py-2 text-white hover:bg-teal-700 disabled:opacity-50"
         >
           {submitting ? "Creating account…" : "Sign up"}
         </button>
       </form>
 
-      <p className="text-sm text-gray-600">
+      <p className="text-sm text-stone-600">
         Already have an account?{" "}
         <Link href="/login" className="underline">
           Log in

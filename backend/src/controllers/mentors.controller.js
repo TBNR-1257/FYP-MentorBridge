@@ -23,10 +23,15 @@ async function getOwnVerifiedMentorProfile(userId) {
 async function listQueue(req, res) {
   const mentorProfile = await getOwnVerifiedMentorProfile(req.user.id);
 
+  // Shows both: open requests this mentor was matched to (anyone matched can
+  // browse and accept), and requests a student directed at this mentor
+  // specifically (only they can act on those until they respond).
   const suggestions = await prisma.matchSuggestion.findMany({
     where: {
       mentorProfileId: mentorProfile.id,
-      helpRequest: { status: "OPEN" },
+      helpRequest: {
+        OR: [{ status: "OPEN" }, { status: "REQUESTED", requestedMentorProfileId: mentorProfile.id }],
+      },
     },
     include: {
       helpRequest: {
@@ -46,6 +51,12 @@ async function acceptHelpRequest(req, res) {
   const mentorProfile = await getOwnVerifiedMentorProfile(req.user.id);
   const session = await helpRequestService.confirmMatch(req.params.id, mentorProfile.id);
   res.status(201).json({ session });
+}
+
+async function declineHelpRequest(req, res) {
+  const mentorProfile = await getOwnVerifiedMentorProfile(req.user.id);
+  await helpRequestService.declineRequest(req.params.id, mentorProfile.id);
+  res.status(200).json({ ok: true });
 }
 
 async function updateProfile(req, res) {
@@ -102,4 +113,22 @@ async function updateProfile(req, res) {
   res.json({ mentorProfile: updated });
 }
 
-module.exports = { listQueue, acceptHelpRequest, updateProfile };
+async function listServiceHours(req, res) {
+  const mentorProfile = await getOwnMentorProfile(req.user.id);
+
+  const logs = await prisma.serviceHourLog.findMany({
+    where: { mentorProfileId: mentorProfile.id },
+    include: {
+      session: {
+        include: { helpRequest: { include: { subject: true } } },
+      },
+    },
+    orderBy: { loggedAt: "desc" },
+  });
+
+  const totalHours = logs.reduce((sum, log) => sum + Number(log.hours), 0);
+
+  res.json({ logs, totalHours: Math.round(totalHours * 100) / 100 });
+}
+
+module.exports = { listQueue, acceptHelpRequest, declineHelpRequest, updateProfile, listServiceHours };

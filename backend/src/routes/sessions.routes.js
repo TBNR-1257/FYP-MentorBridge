@@ -14,5 +14,6 @@ router.post("/:id/start", asyncHandler(controller.start));
 router.patch("/:id/notes", asyncHandler(controller.notes));
 router.patch("/:id/confidence", asyncHandler(controller.confidence));
 router.post("/:id/complete", asyncHandler(controller.complete));
+router.post("/:id/rating", asyncHandler(controller.rate));
 
 module.exports = router;

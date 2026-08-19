@@ -1,5 +1,6 @@
 const service = require("../services/session.service");
 const { setNotesSchema, setConfidenceSchema, completeSessionSchema } = require("../schemas/session.schema");
+const { createRatingSchema } = require("../schemas/rating.schema");
 
 async function list(req, res) {
   const sessions = await service.listMySessions(req.user.id, req.user.role);
@@ -48,4 +49,13 @@ async function complete(req, res) {
   res.json({ session });
 }
 
-module.exports = { list, detail, messages, start, notes, confidence, complete };
+async function rate(req, res) {
+  const parsed = createRatingSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.issues.map((i) => i.message).join(", ") });
+  }
+  const rating = await service.addRating(req.params.id, req.user.id, parsed.data);
+  res.status(201).json({ rating });
+}
+
+module.exports = { list, detail, messages, start, notes, confidence, complete, rate };

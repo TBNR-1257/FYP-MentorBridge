@@ -9,7 +9,17 @@ const DETAIL_INCLUDE = {
       studentProfile: { include: { user: { select: { id: true, name: true } } } },
     },
   },
+  ratings: { include: { rater: { select: { id: true, name: true } } } },
 };
+
+const MIN_LOGGED_HOURS = 0.25;
+const DEFAULT_LOGGED_HOURS = 1;
+
+function computeSessionHours(startedAt, endedAt) {
+  if (!startedAt) return DEFAULT_LOGGED_HOURS;
+  const hours = (endedAt.getTime() - startedAt.getTime()) / 3600000;
+  return Math.max(MIN_LOGGED_HOURS, Math.round(hours * 100) / 100);
+}
 
 async function loadSessionForParticipant(sessionId, userId) {
   const session = await prisma.session.findUnique({ where: { id: sessionId }, include: DETAIL_INCLUDE });
@@ -111,16 +121,56 @@ async function completeSession(sessionId, userId, outcome) {
   // A no-show closes out this attempt rather than reopening it for rematching;
   // the student can post a fresh help request if they still need help.
   const helpRequestStatus = outcome === "NO_SHOW" ? "CANCELLED" : "COMPLETED";
+  const endedAt = new Date();
 
   return prisma.$transaction(async (tx) => {
     const updated = await tx.session.update({
       where: { id: sessionId },
-      data: { status: outcome, endedAt: new Date() },
+      data: { status: outcome, endedAt },
       include: DETAIL_INCLUDE,
     });
     await tx.helpRequest.update({ where: { id: session.helpRequestId }, data: { status: helpRequestStatus } });
+
+    if (outcome === "COMPLETED") {
+      await tx.serviceHourLog.create({
+        data: {
+          sessionId,
+          mentorProfileId: session.mentorProfileId,
+          hours: computeSessionHours(session.startedAt, endedAt),
+        },
+      });
+    }
+
     return updated;
   });
+}
+
+async function addRating(sessionId, userId, data) {
+  const { session, isMentor } = await loadSessionForParticipant(sessionId, userId);
+  if (session.status === "SCHEDULED") {
+    throw new HttpError(409, "This session hasn't concluded yet");
+  }
+
+  const rateeId = isMentor ? session.helpRequest.studentProfile.userId : session.mentorProfile.userId;
+
+  try {
+    return await prisma.rating.create({
+      data: {
+        sessionId,
+        raterId: userId,
+        rateeId,
+        score: data.score,
+        comment: data.comment,
+        isNoShow: isMentor ? Boolean(data.isNoShow) : false,
+        isMisconduct: isMentor ? Boolean(data.isMisconduct) : false,
+      },
+    });
+  } catch (err) {
+    if (err.code === "P2002") {
+      throw new HttpError(409, "You have already rated this session");
+    }
+    throw err;
+  }
 }
 
 module.exports = {
@@ -131,4 +181,5 @@ module.exports = {
   setMentorNotes,
   setConfidence,
   completeSession,
+  addRating,
 };

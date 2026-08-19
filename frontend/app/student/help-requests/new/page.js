@@ -94,7 +94,7 @@ export default function NewHelpRequestPage() {
             placeholder="Quadratic equations"
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-2"
+            className="rounded-lg border border-stone-300 bg-white px-3 py-2"
           />
         </Field>
 
@@ -102,7 +102,7 @@ export default function NewHelpRequestPage() {
           <select
             value={educationLevel}
             onChange={(e) => setEducationLevel(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-2"
+            className="rounded-lg border border-stone-300 bg-white px-3 py-2"
           >
             {EDUCATION_LEVELS.map((level) => (
               <option key={level} value={level}>
@@ -118,7 +118,7 @@ export default function NewHelpRequestPage() {
             placeholder="English, Malay"
             value={languagePreferences}
             onChange={(e) => setLanguagePreferences(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-2"
+            className="rounded-lg border border-stone-300 bg-white px-3 py-2"
           />
         </Field>
 
@@ -126,7 +126,7 @@ export default function NewHelpRequestPage() {
           <select
             value={urgencyLevel}
             onChange={(e) => setUrgencyLevel(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-2"
+            className="rounded-lg border border-stone-300 bg-white px-3 py-2"
           >
             {URGENCY_LEVELS.map((level) => (
               <option key={level} value={level}>
@@ -140,7 +140,7 @@ export default function NewHelpRequestPage() {
           <select
             value={sessionFormat}
             onChange={(e) => setSessionFormat(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-2"
+            className="rounded-lg border border-stone-300 bg-white px-3 py-2"
           >
             {SESSION_FORMATS.map((f) => (
               <option key={f.value} value={f.value}>
@@ -156,7 +156,7 @@ export default function NewHelpRequestPage() {
             <select
               value={preferredDayOfWeek}
               onChange={(e) => setPreferredDayOfWeek(e.target.value)}
-              className="rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+              className="rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-sm"
             >
               {DAYS.map((day) => (
                 <option key={day.value} value={day.value}>
@@ -168,14 +168,14 @@ export default function NewHelpRequestPage() {
               type="time"
               value={preferredStartTime}
               onChange={(e) => setPreferredStartTime(e.target.value)}
-              className="rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+              className="rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-sm"
             />
-            <span className="text-gray-500">to</span>
+            <span className="text-stone-500">to</span>
             <input
               type="time"
               value={preferredEndTime}
               onChange={(e) => setPreferredEndTime(e.target.value)}
-              className="rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+              className="rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-sm"
             />
           </div>
         </fieldset>
@@ -185,7 +185,7 @@ export default function NewHelpRequestPage() {
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-md bg-black px-4 py-2 text-white hover:bg-gray-800 disabled:opacity-50"
+          className="rounded-lg bg-teal-600 px-4 py-2 text-white hover:bg-teal-700 disabled:opacity-50"
         >
           {submitting ? "Posting…" : "Post request"}
         </button>

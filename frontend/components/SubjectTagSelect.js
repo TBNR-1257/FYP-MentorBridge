@@ -53,14 +53,14 @@ export default function SubjectTagSelect({ value, onChange, placeholder }) {
 
   return (
     <div ref={containerRef} className="relative">
-      <div className="flex flex-wrap items-center gap-1 rounded-md border border-gray-300 px-2 py-1.5">
+      <div className="flex flex-wrap items-center gap-1 rounded-lg border border-stone-300 bg-white px-2 py-1.5">
         {value.map((name) => (
-          <span key={name} className="flex items-center gap-1 rounded bg-gray-100 px-2 py-0.5 text-sm">
+          <span key={name} className="flex items-center gap-1 rounded bg-stone-100 px-2 py-0.5 text-sm text-stone-900">
             {name}
             <button
               type="button"
               onClick={() => removeSubject(name)}
-              className="text-gray-500 hover:text-red-600"
+              className="text-stone-500 hover:text-red-600"
               aria-label={`Remove ${name}`}
             >
               &times;
@@ -81,13 +81,13 @@ export default function SubjectTagSelect({ value, onChange, placeholder }) {
         />
       </div>
       {open && (filtered.length > 0 || canCreate) && (
-        <ul className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-md border border-gray-200 bg-white shadow-md">
+        <ul className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-stone-200 bg-white text-stone-900 shadow-md">
           {filtered.map((s) => (
             <li key={s.id}>
               <button
                 type="button"
                 onClick={() => addSubject(s.name)}
-                className="block w-full px-3 py-2 text-left text-sm hover:bg-gray-100"
+                className="block w-full px-3 py-2 text-left text-sm hover:bg-stone-100"
               >
                 {s.name}
               </button>
@@ -98,7 +98,7 @@ export default function SubjectTagSelect({ value, onChange, placeholder }) {
               <button
                 type="button"
                 onClick={() => addSubject(query.trim())}
-                className="block w-full px-3 py-2 text-left text-sm text-gray-600 hover:bg-gray-100"
+                className="block w-full px-3 py-2 text-left text-sm text-stone-600 hover:bg-stone-100"
               >
                 + Add &quot;{query.trim()}&quot; as a new subject
               </button>

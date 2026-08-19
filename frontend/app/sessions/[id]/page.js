@@ -21,6 +21,11 @@ export default function SessionRoomPage({ params }) {
   const [notesDraft, setNotesDraft] = useState("");
   const [savingNotes, setSavingNotes] = useState(false);
   const [completing, setCompleting] = useState(false);
+  const [ratingScore, setRatingScore] = useState(null);
+  const [ratingComment, setRatingComment] = useState("");
+  const [ratingNoShow, setRatingNoShow] = useState(false);
+  const [ratingMisconduct, setRatingMisconduct] = useState(false);
+  const [submittingRating, setSubmittingRating] = useState(false);
 
   const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -116,11 +121,32 @@ export default function SessionRoomPage({ params }) {
     }
   }
 
+  async function submitRating(e) {
+    e.preventDefault();
+    setSubmittingRating(true);
+    setError(null);
+    try {
+      const { rating } = await api.rateSession(token, id, {
+        ...(ratingScore ? { score: ratingScore } : {}),
+        ...(ratingComment ? { comment: ratingComment } : {}),
+        isNoShow: ratingNoShow,
+        isMisconduct: ratingMisconduct,
+      });
+      setSession((prev) => ({ ...prev, ratings: [...prev.ratings, rating] }));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSubmittingRating(false);
+    }
+  }
+
   if (loading || !session) return null;
 
   const isMentor = user.role === "MENTOR";
   const isStudent = user.role === "STUDENT";
   const isOpen = session.status === "SCHEDULED";
+  const canRate = !isOpen;
+  const myRating = session.ratings.find((r) => r.raterId === user.id);
 
   return (
     <main className="flex flex-1 flex-col items-center px-6 py-8">
@@ -128,12 +154,12 @@ export default function SessionRoomPage({ params }) {
         <div>
           <Link
             href={isMentor ? "/mentor/dashboard" : "/student/dashboard"}
-            className="text-sm text-gray-500 hover:underline"
+            className="text-sm text-stone-500 hover:underline"
           >
             &larr; Back to dashboard
           </Link>
           <h1 className="mt-2 text-2xl font-semibold">{session.helpRequest.topic}</h1>
-          <p className="text-gray-600">
+          <p className="text-stone-600">
             {session.helpRequest.subject.name} · {session.format} · Status:{" "}
             <span className="font-medium">{session.status}</span>
           </p>
@@ -142,18 +168,18 @@ export default function SessionRoomPage({ params }) {
         {error && <p className="text-sm text-red-600">{error}</p>}
 
         {session.format === "VIDEO_CALL" && (
-          <div className="flex h-40 items-center justify-center rounded-md border border-dashed border-gray-300 text-sm text-gray-500">
+          <div className="flex h-40 items-center justify-center rounded-lg border border-dashed border-stone-300 bg-white text-sm text-stone-500">
             Video call — coming soon. Use text chat below for now.
           </div>
         )}
 
-        <div className="flex h-80 flex-col rounded-md border border-gray-200">
+        <div className="flex h-80 flex-col rounded-lg border border-stone-200 bg-white">
           <div className="flex-1 overflow-y-auto p-3">
             {messages.map((m) => (
               <div key={m.id} className={`mb-2 flex ${m.senderId === user.id ? "justify-end" : "justify-start"}`}>
                 <div
-                  className={`max-w-[75%] rounded-md px-3 py-1.5 text-sm ${
-                    m.senderId === user.id ? "bg-black text-white" : "bg-gray-100"
+                  className={`max-w-[75%] rounded-lg px-3 py-1.5 text-sm ${
+                    m.senderId === user.id ? "bg-teal-600 text-white" : "bg-stone-100 text-stone-900"
                   }`}
                 >
                   <p className="text-xs opacity-70">{m.sender.name}</p>
@@ -163,21 +189,21 @@ export default function SessionRoomPage({ params }) {
             ))}
             <div ref={messagesEndRef} />
           </div>
-          <form onSubmit={sendMessage} className="flex gap-2 border-t border-gray-200 p-2">
+          <form onSubmit={sendMessage} className="flex gap-2 border-t border-stone-200 bg-white p-2">
             <input
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               placeholder="Type a message…"
-              className="flex-1 rounded-md border border-gray-300 px-3 py-1.5 text-sm"
+              className="flex-1 rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-sm"
             />
-            <button type="submit" className="rounded-md bg-black px-3 py-1.5 text-sm text-white hover:bg-gray-800">
+            <button type="submit" className="rounded-lg bg-teal-600 px-3 py-1.5 text-sm text-white hover:bg-teal-700">
               Send
             </button>
           </form>
         </div>
 
         {isStudent && (
-          <section className="rounded-md border border-gray-200 p-4 text-sm">
+          <section className="rounded-lg border border-stone-200 bg-white p-4 text-sm">
             <h2 className="mb-2 font-medium">Confidence tracking</h2>
             <div className="flex gap-6">
               <ConfidencePicker
@@ -195,39 +221,105 @@ export default function SessionRoomPage({ params }) {
         )}
 
         {isMentor && (
-          <section className="rounded-md border border-gray-200 p-4 text-sm">
+          <section className="rounded-lg border border-stone-200 bg-white p-4 text-sm">
             <h2 className="mb-2 font-medium">Session notes</h2>
             <textarea
               rows={3}
               value={notesDraft}
               onChange={(e) => setNotesDraft(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2"
+              className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2"
             />
             <button
               onClick={saveNotes}
               disabled={savingNotes}
-              className="mt-2 rounded-md bg-black px-3 py-1.5 text-white hover:bg-gray-800 disabled:opacity-50"
+              className="mt-2 rounded-lg bg-teal-600 px-3 py-1.5 text-white hover:bg-teal-700 disabled:opacity-50"
             >
               {savingNotes ? "Saving…" : "Save notes"}
             </button>
 
             {isOpen && (
-              <div className="mt-4 flex gap-2 border-t border-gray-200 pt-4">
+              <div className="mt-4 flex gap-2 border-t border-stone-200 bg-white pt-4">
                 <button
                   onClick={() => handleComplete("COMPLETED")}
                   disabled={completing}
-                  className="rounded-md bg-green-600 px-3 py-1.5 text-white hover:bg-green-700 disabled:opacity-50"
+                  className="rounded-lg bg-green-600 px-3 py-1.5 text-white hover:bg-green-700 disabled:opacity-50"
                 >
                   Mark completed
                 </button>
                 <button
                   onClick={() => handleComplete("NO_SHOW")}
                   disabled={completing}
-                  className="rounded-md border border-gray-300 px-3 py-1.5 hover:bg-gray-50 disabled:opacity-50"
+                  className="rounded-lg border border-stone-300 bg-white px-3 py-1.5 hover:bg-stone-50 disabled:opacity-50"
                 >
                   Mark no-show
                 </button>
               </div>
+            )}
+          </section>
+        )}
+
+        {canRate && (
+          <section className="rounded-lg border border-stone-200 bg-white p-4 text-sm">
+            <h2 className="mb-2 font-medium">{isMentor ? "Rate the student" : "Rate your mentor"}</h2>
+
+            {myRating ? (
+              <div>
+                {myRating.score && <p>Your rating: {myRating.score} / 5</p>}
+                {myRating.comment && <p className="text-stone-600">&quot;{myRating.comment}&quot;</p>}
+                {myRating.isNoShow && <p className="text-amber-700">Flagged: no-show</p>}
+                {myRating.isMisconduct && <p className="text-red-700">Flagged: misconduct</p>}
+              </div>
+            ) : (
+              <form onSubmit={submitRating} className="flex flex-col gap-3">
+                <div className="flex gap-1">
+                  {CONFIDENCE_LEVELS.map((level) => (
+                    <button
+                      key={level}
+                      type="button"
+                      onClick={() => setRatingScore(level)}
+                      className={`h-8 w-8 rounded-lg border text-sm ${
+                        ratingScore === level ? "bg-teal-600 text-white" : "border-stone-300 bg-white hover:bg-stone-50"
+                      }`}
+                    >
+                      {level}
+                    </button>
+                  ))}
+                </div>
+                <textarea
+                  rows={2}
+                  placeholder="Optional comment"
+                  value={ratingComment}
+                  onChange={(e) => setRatingComment(e.target.value)}
+                  className="rounded-lg border border-stone-300 bg-white px-3 py-2"
+                />
+                {isMentor && (
+                  <div className="flex gap-4 text-stone-700">
+                    <label className="flex items-center gap-1.5">
+                      <input
+                        type="checkbox"
+                        checked={ratingNoShow}
+                        onChange={(e) => setRatingNoShow(e.target.checked)}
+                      />
+                      Student no-show
+                    </label>
+                    <label className="flex items-center gap-1.5">
+                      <input
+                        type="checkbox"
+                        checked={ratingMisconduct}
+                        onChange={(e) => setRatingMisconduct(e.target.checked)}
+                      />
+                      Inappropriate behaviour
+                    </label>
+                  </div>
+                )}
+                <button
+                  type="submit"
+                  disabled={submittingRating || (!ratingScore && !ratingNoShow && !ratingMisconduct)}
+                  className="self-start rounded-lg bg-teal-600 px-3 py-1.5 text-white hover:bg-teal-700 disabled:opacity-50"
+                >
+                  {submittingRating ? "Submitting…" : "Submit rating"}
+                </button>
+              </form>
             )}
           </section>
         )}
@@ -239,14 +331,14 @@ export default function SessionRoomPage({ params }) {
 function ConfidencePicker({ label, value, onChange }) {
   return (
     <div>
-      <p className="mb-1 text-gray-500">{label}</p>
+      <p className="mb-1 text-stone-500">{label}</p>
       <div className="flex gap-1">
         {CONFIDENCE_LEVELS.map((level) => (
           <button
             key={level}
             onClick={() => onChange(level)}
-            className={`h-7 w-7 rounded-md border text-xs ${
-              value === level ? "bg-black text-white" : "border-gray-300 hover:bg-gray-50"
+            className={`h-7 w-7 rounded-lg border text-xs ${
+              value === level ? "bg-teal-600 text-white" : "border-stone-300 bg-white hover:bg-stone-50"
             }`}
           >
             {level}

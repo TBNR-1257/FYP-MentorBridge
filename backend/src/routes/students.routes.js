@@ -10,6 +10,8 @@ router.use(requireAuth, requireRole("STUDENT"));
 router.post("/help-requests", asyncHandler(controller.createHelpRequest));
 router.get("/help-requests", asyncHandler(controller.listMyHelpRequests));
 router.get("/help-requests/:id", asyncHandler(controller.getHelpRequest));
-router.post("/help-requests/:id/select-mentor", asyncHandler(controller.selectMentor));
+router.post("/help-requests/:id/request-mentor", asyncHandler(controller.requestMentor));
+router.post("/help-requests/:id/cancel-request", asyncHandler(controller.cancelRequest));
+router.get("/progress", asyncHandler(controller.getProgress));
 
 module.exports = router;

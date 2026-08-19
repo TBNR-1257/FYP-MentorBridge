@@ -3,6 +3,7 @@ const HttpError = require("../utils/HttpError");
 const { createHelpRequestSchema, selectMentorSchema } = require("../schemas/helpRequest.schema");
 const helpRequestService = require("../services/helpRequest.service");
 const { resolveSubject } = require("../services/subject.service");
+const { computeWeeklyStreak } = require("../utils/streak");
 
 async function getOwnStudentProfile(userId) {
   const profile = await prisma.studentProfile.findUnique({ where: { userId } });
@@ -63,6 +64,7 @@ async function getHelpRequest(req, res) {
     include: {
       subject: true,
       sessions: true,
+      requestedMentorProfile: { include: { user: { select: { id: true, name: true } } } },
       matchSuggestions: {
         orderBy: { rank: "asc" },
         include: { mentorProfile: { include: { user: { select: { id: true, name: true } } } } },
@@ -77,7 +79,7 @@ async function getHelpRequest(req, res) {
   res.json({ helpRequest });
 }
 
-async function selectMentor(req, res) {
+async function requestMentor(req, res) {
   const parsed = selectMentorSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: parsed.error.issues.map((i) => i.message).join(", ") });
@@ -90,8 +92,44 @@ async function selectMentor(req, res) {
     return res.status(404).json({ error: "Help request not found" });
   }
 
-  const session = await helpRequestService.confirmMatch(helpRequest.id, parsed.data.mentorProfileId);
-  res.status(201).json({ session });
+  const updated = await helpRequestService.requestMentor(helpRequest.id, parsed.data.mentorProfileId);
+  res.status(200).json({ helpRequest: updated });
 }
 
-module.exports = { createHelpRequest, listMyHelpRequests, getHelpRequest, selectMentor };
+async function cancelRequest(req, res) {
+  const studentProfile = await getOwnStudentProfile(req.user.id);
+  const helpRequest = await prisma.helpRequest.findUnique({ where: { id: req.params.id } });
+
+  if (!helpRequest || helpRequest.studentProfileId !== studentProfile.id) {
+    return res.status(404).json({ error: "Help request not found" });
+  }
+
+  await helpRequestService.cancelRequest(helpRequest.id);
+  res.status(200).json({ ok: true });
+}
+
+async function getProgress(req, res) {
+  const studentProfile = await getOwnStudentProfile(req.user.id);
+
+  const sessions = await prisma.session.findMany({
+    where: {
+      status: "COMPLETED",
+      helpRequest: { studentProfileId: studentProfile.id },
+    },
+    include: { helpRequest: { include: { subject: true } } },
+    orderBy: { endedAt: "desc" },
+  });
+
+  const streakWeeks = computeWeeklyStreak(sessions.map((s) => s.endedAt));
+
+  res.json({ sessions, streakWeeks });
+}
+
+module.exports = {
+  createHelpRequest,
+  listMyHelpRequests,
+  getHelpRequest,
+  requestMentor,
+  cancelRequest,
+  getProgress,
+};

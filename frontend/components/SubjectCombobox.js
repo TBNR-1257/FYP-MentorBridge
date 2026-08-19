@@ -39,10 +39,10 @@ export default function SubjectCombobox({ value, onChange, placeholder, required
         }}
         onFocus={() => setOpen(true)}
         autoComplete="off"
-        className="w-full rounded-md border border-gray-300 px-3 py-2"
+        className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2"
       />
       {open && (filtered.length > 0 || canCreate) && (
-        <ul className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-md border border-gray-200 bg-white shadow-md">
+        <ul className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-stone-200 bg-white text-stone-900 shadow-md">
           {filtered.map((s) => (
             <li key={s.id}>
               <button
@@ -51,7 +51,7 @@ export default function SubjectCombobox({ value, onChange, placeholder, required
                   onChange(s.name);
                   setOpen(false);
                 }}
-                className="block w-full px-3 py-2 text-left text-sm hover:bg-gray-100"
+                className="block w-full px-3 py-2 text-left text-sm hover:bg-stone-100"
               >
                 {s.name}
               </button>
@@ -62,7 +62,7 @@ export default function SubjectCombobox({ value, onChange, placeholder, required
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="block w-full px-3 py-2 text-left text-sm text-gray-600 hover:bg-gray-100"
+                className="block w-full px-3 py-2 text-left text-sm text-stone-600 hover:bg-stone-100"
               >
                 Use &quot;{value.trim()}&quot; as a new subject
               </button>

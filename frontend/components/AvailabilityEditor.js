@@ -37,7 +37,7 @@ export default function AvailabilityEditor({ value, onChange }) {
           <select
             value={slot.dayOfWeek}
             onChange={(e) => updateSlot(index, "dayOfWeek", Number(e.target.value))}
-            className="rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+            className="rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-sm"
           >
             {DAYS.map((day) => (
               <option key={day.value} value={day.value}>
@@ -49,27 +49,27 @@ export default function AvailabilityEditor({ value, onChange }) {
             type="time"
             value={slot.startTime}
             onChange={(e) => updateSlot(index, "startTime", e.target.value)}
-            className="rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+            className="rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-sm"
           />
-          <span className="text-gray-500">to</span>
+          <span className="text-stone-500">to</span>
           <input
             type="time"
             value={slot.endTime}
             onChange={(e) => updateSlot(index, "endTime", e.target.value)}
-            className="rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+            className="rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-sm"
           />
           {value.length > 1 && (
             <button
               type="button"
               onClick={() => removeSlot(index)}
-              className="text-sm text-gray-500 hover:text-red-600"
+              className="text-sm text-stone-500 hover:text-red-600"
             >
               Remove
             </button>
           )}
         </div>
       ))}
-      <button type="button" onClick={addSlot} className="self-start text-sm text-gray-700 underline">
+      <button type="button" onClick={addSlot} className="self-start text-sm text-stone-700 underline">
         + Add another slot
       </button>
     </fieldset>

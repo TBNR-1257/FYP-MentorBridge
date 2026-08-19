@@ -12,7 +12,7 @@ export default function MentorQueuePage() {
   const [queue, setQueue] = useState([]);
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState(null);
-  const [acceptingId, setAcceptingId] = useState(null);
+  const [actioningId, setActioningId] = useState(null);
 
   async function load() {
     setFetching(true);
@@ -32,7 +32,7 @@ export default function MentorQueuePage() {
   }, [loading, token]);
 
   async function handleAccept(helpRequestId) {
-    setAcceptingId(helpRequestId);
+    setActioningId(helpRequestId);
     setError(null);
     try {
       await api.acceptHelpRequest(token, helpRequestId);
@@ -42,7 +42,21 @@ export default function MentorQueuePage() {
       // Someone else may have claimed it first — refresh to reflect reality.
       await load();
     } finally {
-      setAcceptingId(null);
+      setActioningId(null);
+    }
+  }
+
+  async function handleDecline(helpRequestId) {
+    setActioningId(helpRequestId);
+    setError(null);
+    try {
+      await api.declineHelpRequest(token, helpRequestId);
+      setQueue((prev) => prev.filter((q) => q.helpRequest.id !== helpRequestId));
+    } catch (err) {
+      setError(err.message);
+      await load();
+    } finally {
+      setActioningId(null);
     }
   }
 
@@ -51,7 +65,7 @@ export default function MentorQueuePage() {
   return (
     <main className="flex flex-1 flex-col items-center gap-6 px-6 py-10">
       <div className="w-full max-w-2xl">
-        <Link href="/mentor/dashboard" className="text-sm text-gray-500 hover:underline">
+        <Link href="/mentor/dashboard" className="text-sm text-stone-500 hover:underline">
           &larr; Back to dashboard
         </Link>
 
@@ -60,37 +74,55 @@ export default function MentorQueuePage() {
         {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
         {fetching ? (
-          <p className="mt-6 text-sm text-gray-500">Loading…</p>
+          <p className="mt-6 text-sm text-stone-500">Loading…</p>
         ) : queue.length === 0 ? (
-          <p className="mt-6 text-sm text-gray-500">No open requests match your profile right now.</p>
+          <p className="mt-6 text-sm text-stone-500">No open requests match your profile right now.</p>
         ) : (
           <ul className="mt-6 flex flex-col gap-3">
-            {queue.map((match) => (
-              <li
-                key={match.id}
-                className="flex items-center justify-between rounded-md border border-gray-200 p-4 text-sm"
-              >
-                <div>
-                  <p className="font-medium">{match.helpRequest.topic}</p>
-                  <p className="text-gray-500">
-                    {match.helpRequest.subject.name} · {match.helpRequest.educationLevel} ·{" "}
-                    {match.helpRequest.urgencyLevel} urgency · {match.helpRequest.sessionFormat}
-                  </p>
-                  <p className="text-gray-500">
-                    Language: {match.helpRequest.languagePreferences.join(", ")}
-                  </p>
-                  <p className="text-gray-500">Student: {match.helpRequest.studentProfile.user.name}</p>
-                  <p className="text-gray-500">Match score: {match.score}</p>
-                </div>
-                <button
-                  onClick={() => handleAccept(match.helpRequest.id)}
-                  disabled={acceptingId === match.helpRequest.id}
-                  className="rounded-md bg-black px-3 py-1.5 text-white hover:bg-gray-800 disabled:opacity-50"
-                >
-                  {acceptingId === match.helpRequest.id ? "Accepting…" : "Accept"}
-                </button>
-              </li>
-            ))}
+            {queue.map((match) => {
+              const isDirectRequest = match.helpRequest.status === "REQUESTED";
+              return (
+                <li key={match.id} className="rounded-lg border border-stone-200 bg-white p-4 text-sm">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      {isDirectRequest && (
+                        <span className="mb-1 inline-block rounded bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
+                          Direct request
+                        </span>
+                      )}
+                      <p className="font-medium">{match.helpRequest.topic}</p>
+                      <p className="text-stone-500">
+                        {match.helpRequest.subject.name} · {match.helpRequest.educationLevel} ·{" "}
+                        {match.helpRequest.urgencyLevel} urgency · {match.helpRequest.sessionFormat}
+                      </p>
+                      <p className="text-stone-500">
+                        Language: {match.helpRequest.languagePreferences.join(", ")}
+                      </p>
+                      <p className="text-stone-500">Student: {match.helpRequest.studentProfile.user.name}</p>
+                      <p className="text-stone-500">Match score: {match.score}</p>
+                    </div>
+                    <div className="flex shrink-0 gap-2">
+                      <button
+                        onClick={() => handleAccept(match.helpRequest.id)}
+                        disabled={actioningId === match.helpRequest.id}
+                        className="rounded-lg bg-teal-600 px-3 py-1.5 text-white hover:bg-teal-700 disabled:opacity-50"
+                      >
+                        Accept
+                      </button>
+                      {isDirectRequest && (
+                        <button
+                          onClick={() => handleDecline(match.helpRequest.id)}
+                          disabled={actioningId === match.helpRequest.id}
+                          className="rounded-lg border border-stone-300 bg-white px-3 py-1.5 hover:bg-stone-50 disabled:opacity-50"
+                        >
+                          Decline
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>

@@ -58,35 +58,35 @@ export default function AdminDashboardPage() {
         {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
 
         {fetching ? (
-          <p className="text-sm text-gray-500">Loading…</p>
+          <p className="text-sm text-stone-500">Loading…</p>
         ) : mentors.length === 0 ? (
-          <p className="text-sm text-gray-500">No mentors awaiting verification.</p>
+          <p className="text-sm text-stone-500">No mentors awaiting verification.</p>
         ) : (
           <ul className="flex flex-col gap-3">
             {mentors.map((mentor) => (
-              <li key={mentor.id} className="rounded-md border border-gray-200 p-4 text-sm">
+              <li key={mentor.id} className="rounded-lg border border-stone-200 bg-white p-4 text-sm">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="font-medium">{mentor.user.name}</p>
-                    <p className="text-gray-500">{mentor.user.email}</p>
+                    <p className="text-stone-500">{mentor.user.email}</p>
                     <p className="mt-2">{mentor.qualifications}</p>
-                    <p className="mt-1 text-gray-500">
+                    <p className="mt-1 text-stone-500">
                       Subjects: {mentor.subjects.map((s) => s.subject.name).join(", ") || "—"}
                     </p>
-                    <p className="text-gray-500">Languages: {mentor.languages.join(", ") || "—"}</p>
+                    <p className="text-stone-500">Languages: {mentor.languages.join(", ") || "—"}</p>
                   </div>
                   <div className="flex shrink-0 gap-2">
                     <button
                       onClick={() => handleDecision(mentor.id, "verify")}
                       disabled={actioningId === mentor.id}
-                      className="rounded-md bg-black px-3 py-1.5 text-white hover:bg-gray-800 disabled:opacity-50"
+                      className="rounded-lg bg-teal-600 px-3 py-1.5 text-white hover:bg-teal-700 disabled:opacity-50"
                     >
                       Verify
                     </button>
                     <button
                       onClick={() => handleDecision(mentor.id, "reject")}
                       disabled={actioningId === mentor.id}
-                      className="rounded-md border border-gray-300 px-3 py-1.5 hover:bg-gray-50 disabled:opacity-50"
+                      className="rounded-lg border border-stone-300 bg-white px-3 py-1.5 hover:bg-stone-50 disabled:opacity-50"
                     >
                       Reject
                     </button>
@@ -98,7 +98,7 @@ export default function AdminDashboardPage() {
         )}
       </section>
 
-      <p className="text-gray-600">TODO: session monitoring, platform analytics, account suspension.</p>
+      <p className="text-stone-600">TODO: session monitoring, platform analytics, account suspension.</p>
     </main>
   );
 }

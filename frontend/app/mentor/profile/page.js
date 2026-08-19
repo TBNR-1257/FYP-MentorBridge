@@ -73,7 +73,7 @@ export default function MentorProfilePage() {
   return (
     <main className="flex flex-1 flex-col items-center gap-6 px-6 py-10">
       <div className="w-full max-w-md">
-        <Link href="/mentor/dashboard" className="text-sm text-gray-500 hover:underline">
+        <Link href="/mentor/dashboard" className="text-sm text-stone-500 hover:underline">
           &larr; Back to dashboard
         </Link>
         <h1 className="mt-2 text-2xl font-semibold">Edit profile</h1>
@@ -86,7 +86,7 @@ export default function MentorProfilePage() {
             rows={3}
             value={qualifications}
             onChange={(e) => setQualifications(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-2"
+            className="rounded-lg border border-stone-300 bg-white px-3 py-2"
           />
           {isVerified && (
             <p className="text-xs text-amber-700">
@@ -100,7 +100,7 @@ export default function MentorProfilePage() {
             rows={3}
             value={bio}
             onChange={(e) => setBio(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-2"
+            className="rounded-lg border border-stone-300 bg-white px-3 py-2"
           />
         </Field>
 
@@ -109,7 +109,7 @@ export default function MentorProfilePage() {
             required
             value={languages}
             onChange={(e) => setLanguages(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-2"
+            className="rounded-lg border border-stone-300 bg-white px-3 py-2"
           />
         </Field>
 
@@ -130,7 +130,7 @@ export default function MentorProfilePage() {
         <button
           type="submit"
           disabled={submitting || subjects.length === 0}
-          className="rounded-md bg-black px-4 py-2 text-white hover:bg-gray-800 disabled:opacity-50"
+          className="rounded-lg bg-teal-600 px-4 py-2 text-white hover:bg-teal-700 disabled:opacity-50"
         >
           {submitting ? "Saving…" : "Save changes"}
         </button>
