@@ -59,6 +59,12 @@ enum SessionStatus {
   CANCELLED
 }
 
+enum BadgeMetric {
+  RATING_COUNT
+  SERVICE_HOURS
+  SESSION_COUNT
+}
+
 // =========================================================
 // Users & Profiles
 // =========================================================
@@ -319,6 +325,11 @@ model Badge {
   description String
   iconUrl     String?
   criteria    String // human-readable description of how it's earned
+
+  // Machine-checkable form of the same criteria, so awarding is automatic
+  // rather than hardcoded per badge.
+  metric    BadgeMetric
+  threshold Int
 
   mentors MentorBadge[]
 }

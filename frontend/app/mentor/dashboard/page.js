@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRequireRole, useAuth } from "@/lib/auth-context";
+import Badge from "@/components/Badge";
 import * as api from "@/lib/api";
 
 export default function MentorDashboardPage() {
@@ -11,14 +12,16 @@ export default function MentorDashboardPage() {
 
   const [sessions, setSessions] = useState([]);
   const [serviceHours, setServiceHours] = useState(null);
+  const [badges, setBadges] = useState([]);
   const [fetching, setFetching] = useState(true);
 
   useEffect(() => {
     if (loading || !token) return;
-    Promise.all([api.listMySessions(token), api.getServiceHours(token)])
-      .then(([{ sessions }, hours]) => {
+    Promise.all([api.listMySessions(token), api.getServiceHours(token), api.getMentorBadges(token)])
+      .then(([{ sessions }, hours, { badges }]) => {
         setSessions(sessions);
         setServiceHours(hours);
+        setBadges(badges);
       })
       .finally(() => setFetching(false));
   }, [loading, token]);
@@ -101,6 +104,20 @@ export default function MentorDashboardPage() {
           </div>
 
           <section className="w-full max-w-md">
+            <h2 className="mb-1 text-lg font-medium">Your badges</h2>
+            <p className="mb-3 text-xs text-stone-500">Hover a badge to see how it's earned.</p>
+            {fetching ? (
+              <p className="text-sm text-stone-500">Loading…</p>
+            ) : (
+              <div className="grid grid-cols-4 gap-4 rounded-lg border border-stone-200 bg-white p-4 sm:grid-cols-4">
+                {badges.map((badge) => (
+                  <Badge key={badge.id} badge={badge} earned={badge.earned} />
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className="w-full max-w-md">
             <h2 className="mb-3 text-lg font-medium">Your sessions</h2>
             {fetching ? (
               <p className="text-sm text-stone-500">Loading…</p>
@@ -125,7 +142,7 @@ export default function MentorDashboardPage() {
         </>
       )}
 
-      <p className="text-stone-600">TODO: badges, leaderboard.</p>
+      <p className="text-stone-600">TODO: leaderboard.</p>
     </main>
   );
 }

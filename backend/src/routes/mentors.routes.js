@@ -12,5 +12,6 @@ router.post("/help-requests/:id/accept", asyncHandler(controller.acceptHelpReque
 router.post("/help-requests/:id/decline", asyncHandler(controller.declineHelpRequest));
 router.patch("/profile", asyncHandler(controller.updateProfile));
 router.get("/service-hours", asyncHandler(controller.listServiceHours));
+router.get("/badges", asyncHandler(controller.listBadges));
 
 module.exports = router;

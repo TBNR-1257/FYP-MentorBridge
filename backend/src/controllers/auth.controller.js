@@ -9,7 +9,13 @@ const SALT_ROUNDS = 10;
 const WITH_PROFILE = {
   include: {
     studentProfile: true,
-    mentorProfile: { include: { subjects: { include: { subject: true } }, availability: true } },
+    mentorProfile: {
+      include: {
+        subjects: { include: { subject: true } },
+        availability: true,
+        badges: { include: { badge: true }, orderBy: { earnedAt: "desc" } },
+      },
+    },
   },
 };
 

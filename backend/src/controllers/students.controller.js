@@ -67,7 +67,14 @@ async function getHelpRequest(req, res) {
       requestedMentorProfile: { include: { user: { select: { id: true, name: true } } } },
       matchSuggestions: {
         orderBy: { rank: "asc" },
-        include: { mentorProfile: { include: { user: { select: { id: true, name: true } } } } },
+        include: {
+          mentorProfile: {
+            include: {
+              user: { select: { id: true, name: true } },
+              badges: { include: { badge: true }, orderBy: { earnedAt: "desc" } },
+            },
+          },
+        },
       },
     },
   });

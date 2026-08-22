@@ -1,5 +1,16 @@
 const prisma = require("../config/prisma");
 const HttpError = require("../utils/HttpError");
+const { checkAndAwardBadges } = require("./gamification.service");
+
+// Badge awarding is a side-effect of the main action (completing a session,
+// leaving a rating) — if it fails, the primary action should still succeed.
+async function safelyCheckBadges(mentorProfileId, mentorUserId) {
+  try {
+    await checkAndAwardBadges(mentorProfileId, mentorUserId);
+  } catch (err) {
+    console.error("Badge check failed:", err);
+  }
+}
 
 const DETAIL_INCLUDE = {
   mentorProfile: { include: { user: { select: { id: true, name: true } } } },
@@ -123,7 +134,7 @@ async function completeSession(sessionId, userId, outcome) {
   const helpRequestStatus = outcome === "NO_SHOW" ? "CANCELLED" : "COMPLETED";
   const endedAt = new Date();
 
-  return prisma.$transaction(async (tx) => {
+  const updated = await prisma.$transaction(async (tx) => {
     const updated = await tx.session.update({
       where: { id: sessionId },
       data: { status: outcome, endedAt },
@@ -143,6 +154,12 @@ async function completeSession(sessionId, userId, outcome) {
 
     return updated;
   });
+
+  if (outcome === "COMPLETED") {
+    await safelyCheckBadges(session.mentorProfileId, session.mentorProfile.userId);
+  }
+
+  return updated;
 }
 
 async function addRating(sessionId, userId, data) {
@@ -153,8 +170,9 @@ async function addRating(sessionId, userId, data) {
 
   const rateeId = isMentor ? session.helpRequest.studentProfile.userId : session.mentorProfile.userId;
 
+  let rating;
   try {
-    return await prisma.rating.create({
+    rating = await prisma.rating.create({
       data: {
         sessionId,
         raterId: userId,
@@ -171,6 +189,14 @@ async function addRating(sessionId, userId, data) {
     }
     throw err;
   }
+
+  // A student rated the mentor — that's the only direction that can move a
+  // rating-count badge.
+  if (!isMentor) {
+    await safelyCheckBadges(session.mentorProfileId, session.mentorProfile.userId);
+  }
+
+  return rating;
 }
 
 module.exports = {

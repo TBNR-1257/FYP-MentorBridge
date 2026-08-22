@@ -180,6 +180,10 @@ export function getServiceHours(token) {
   return apiFetch("/mentors/service-hours", { headers: { Authorization: `Bearer ${token}` } });
 }
 
+export function getMentorBadges(token) {
+  return apiFetch("/mentors/badges", { headers: { Authorization: `Bearer ${token}` } });
+}
+
 export function getProgress(token) {
   return apiFetch("/students/progress", { headers: { Authorization: `Bearer ${token}` } });
 }

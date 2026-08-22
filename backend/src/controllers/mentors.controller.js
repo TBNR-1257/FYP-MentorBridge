@@ -131,4 +131,29 @@ async function listServiceHours(req, res) {
   res.json({ logs, totalHours: Math.round(totalHours * 100) / 100 });
 }
 
-module.exports = { listQueue, acceptHelpRequest, declineHelpRequest, updateProfile, listServiceHours };
+async function listBadges(req, res) {
+  const mentorProfile = await getOwnMentorProfile(req.user.id);
+
+  const [catalog, earned] = await Promise.all([
+    prisma.badge.findMany({ orderBy: [{ metric: "asc" }, { threshold: "asc" }] }),
+    prisma.mentorBadge.findMany({ where: { mentorProfileId: mentorProfile.id } }),
+  ]);
+
+  const earnedByBadgeId = new Map(earned.map((e) => [e.badgeId, e.earnedAt]));
+  const badges = catalog.map((badge) => ({
+    ...badge,
+    earned: earnedByBadgeId.has(badge.id),
+    earnedAt: earnedByBadgeId.get(badge.id) || null,
+  }));
+
+  res.json({ badges });
+}
+
+module.exports = {
+  listQueue,
+  acceptHelpRequest,
+  declineHelpRequest,
+  updateProfile,
+  listServiceHours,
+  listBadges,
+};

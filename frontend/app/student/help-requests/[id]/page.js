@@ -3,6 +3,7 @@
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRequireRole, useAuth } from "@/lib/auth-context";
+import Badge from "@/components/Badge";
 import * as api from "@/lib/api";
 
 export default function HelpRequestDetailPage({ params }) {
@@ -116,6 +117,13 @@ export default function HelpRequestDetailPage({ params }) {
                         #{match.rank} · {match.mentorProfile.user.name}
                       </p>
                       <p className="text-stone-500">Match score: {match.score}</p>
+                      {match.mentorProfile.badges.length > 0 && (
+                        <div className="mt-2 flex gap-3">
+                          {match.mentorProfile.badges.map((mb) => (
+                            <Badge key={mb.badgeId} badge={mb.badge} size="sm" />
+                          ))}
+                        </div>
+                      )}
                     </div>
                     <button
                       onClick={() => handleRequest(match.mentorProfileId)}
