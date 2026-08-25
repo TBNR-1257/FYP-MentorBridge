@@ -46,16 +46,54 @@ async function generateMatches(helpRequest) {
   return suggestions.map((s) => ({ ...s, mentor: mentorsById.get(s.mentorProfileId).user }));
 }
 
+// Backs a direct request to a mentor the student found via Browse rather than
+// from their original ranked suggestions — e.g. the mentor got verified after
+// this help request was posted, so generateMatches never scored them. Creates
+// the missing MatchSuggestion (using the same scoring as the original batch)
+// so the mentor's queue picks up the request; returns null if the mentor isn't
+// actually eligible for this subject.
+async function createSuggestionIfEligible(tx, helpRequestId, mentorProfileId) {
+  const helpRequest = await tx.helpRequest.findUnique({ where: { id: helpRequestId } });
+  const mentor = await tx.mentorProfile.findUnique({
+    where: { id: mentorProfileId },
+    include: { availability: true, sessions: { where: { status: "SCHEDULED" } }, subjects: true },
+  });
+
+  if (!helpRequest || !mentor || mentor.verificationStatus !== "VERIFIED") return null;
+  if (!mentor.subjects.some((s) => s.subjectId === helpRequest.subjectId)) return null;
+
+  const [scored] = scoreMentors(
+    [
+      {
+        id: mentor.id,
+        languages: mentor.languages,
+        availability: mentor.availability,
+        activeSessionCount: mentor.sessions.length,
+      },
+    ],
+    helpRequest
+  );
+
+  const existingCount = await tx.matchSuggestion.count({ where: { helpRequestId } });
+
+  return tx.matchSuggestion.create({
+    data: { helpRequestId, mentorProfileId, score: scored.score, rank: existingCount + 1 },
+  });
+}
+
 // A student requesting a specific mentor from their ranked suggestions doesn't
 // finalize a match by itself — it just flags that mentor as the one who needs
 // to respond, locking out everyone else until they accept or decline.
 async function requestMentor(helpRequestId, mentorProfileId) {
   return prisma.$transaction(async (tx) => {
-    const suggestion = await tx.matchSuggestion.findUnique({
+    let suggestion = await tx.matchSuggestion.findUnique({
       where: { helpRequestId_mentorProfileId: { helpRequestId, mentorProfileId } },
     });
     if (!suggestion) {
-      throw new HttpError(400, "This mentor was not matched to this help request");
+      suggestion = await createSuggestionIfEligible(tx, helpRequestId, mentorProfileId);
+    }
+    if (!suggestion) {
+      throw new HttpError(400, "This mentor does not teach this help request's subject");
     }
 
     const claimed = await tx.helpRequest.updateMany({

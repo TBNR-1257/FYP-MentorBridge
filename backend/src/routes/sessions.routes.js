@@ -12,6 +12,7 @@ router.get("/:id", asyncHandler(controller.detail));
 router.get("/:id/messages", asyncHandler(controller.messages));
 router.post("/:id/start", asyncHandler(controller.start));
 router.patch("/:id/notes", asyncHandler(controller.notes));
+router.patch("/:id/meeting-link", asyncHandler(controller.meetingLink));
 router.patch("/:id/confidence", asyncHandler(controller.confidence));
 router.post("/:id/complete", asyncHandler(controller.complete));
 router.post("/:id/rating", asyncHandler(controller.rate));

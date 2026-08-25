@@ -102,7 +102,15 @@ export default function HelpRequestDetailPage({ params }) {
           </p>
         ) : (
           <section className="mt-6">
-            <h2 className="mb-3 text-lg font-medium">Suggested mentors</h2>
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-lg font-medium">Suggested mentors</h2>
+              <Link
+                href={`/browse/${helpRequest.subject.id}?helpRequestId=${helpRequest.id}`}
+                className="text-sm text-teal-700 hover:underline"
+              >
+                Browse all {helpRequest.subject.name} mentors
+              </Link>
+            </div>
             {helpRequest.matchSuggestions.length === 0 ? (
               <p className="text-sm text-stone-500">No mentors currently match this request.</p>
             ) : (

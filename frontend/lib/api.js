@@ -21,6 +21,13 @@ export function listSubjects() {
   return apiFetch("/subjects");
 }
 
+export function listMentorsForSubject(token, subjectId, search) {
+  const query = search ? `?search=${encodeURIComponent(search)}` : "";
+  return apiFetch(`/subjects/${subjectId}/mentors${query}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
 export function updateMentorProfile(token, payload) {
   return apiFetch("/mentors/profile", {
     method: "PATCH",
@@ -149,6 +156,14 @@ export function setSessionNotes(token, id, mentorNotes) {
     method: "PATCH",
     headers: { Authorization: `Bearer ${token}` },
     body: JSON.stringify({ mentorNotes }),
+  });
+}
+
+export function setSessionMeetingLink(token, id, meetingLink) {
+  return apiFetch(`/sessions/${id}/meeting-link`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ meetingLink }),
   });
 }
 

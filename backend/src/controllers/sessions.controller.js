@@ -1,5 +1,10 @@
 const service = require("../services/session.service");
-const { setNotesSchema, setConfidenceSchema, completeSessionSchema } = require("../schemas/session.schema");
+const {
+  setNotesSchema,
+  setConfidenceSchema,
+  completeSessionSchema,
+  setMeetingLinkSchema,
+} = require("../schemas/session.schema");
 const { createRatingSchema } = require("../schemas/rating.schema");
 
 async function list(req, res) {
@@ -31,6 +36,15 @@ async function notes(req, res) {
   res.json({ session });
 }
 
+async function meetingLink(req, res) {
+  const parsed = setMeetingLinkSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.issues.map((i) => i.message).join(", ") });
+  }
+  const session = await service.setMeetingLink(req.params.id, req.user.id, parsed.data.meetingLink);
+  res.json({ session });
+}
+
 async function confidence(req, res) {
   const parsed = setConfidenceSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -58,4 +72,4 @@ async function rate(req, res) {
   res.status(201).json({ rating });
 }
 
-module.exports = { list, detail, messages, start, notes, confidence, complete, rate };
+module.exports = { list, detail, messages, start, notes, meetingLink, confidence, complete, rate };

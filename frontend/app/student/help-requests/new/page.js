@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useRequireRole, useAuth } from "@/lib/auth-context";
 import SubjectCombobox from "@/components/SubjectCombobox";
+import { useSubjects } from "@/lib/useSubjects";
 import * as api from "@/lib/api";
 
 const EDUCATION_LEVELS = ["PRIMARY", "SECONDARY", "UNDERGRADUATE", "POSTGRADUATE", "OTHER"];
@@ -34,6 +35,10 @@ export default function NewHelpRequestPage() {
   const { loading } = useRequireRole("STUDENT");
   const { token } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const prefillSubjectId = searchParams.get("subject");
+  const prefillMentorProfileId = searchParams.get("mentorProfileId");
+  const subjects = useSubjects();
 
   const [subject, setSubject] = useState("");
   const [topic, setTopic] = useState("");
@@ -46,6 +51,13 @@ export default function NewHelpRequestPage() {
   const [preferredEndTime, setPreferredEndTime] = useState("16:00");
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!prefillSubjectId || subject) return;
+    const match = subjects.find((s) => s.id === prefillSubjectId);
+    if (match) setSubject(match.name);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefillSubjectId, subjects]);
 
   if (loading) return null;
 
@@ -65,6 +77,16 @@ export default function NewHelpRequestPage() {
         preferredStartTime,
         preferredEndTime,
       });
+
+      if (prefillMentorProfileId) {
+        try {
+          await api.requestMentor(token, helpRequest.id, prefillMentorProfileId);
+        } catch {
+          // Request failed (e.g. mentor no longer eligible) — the help request
+          // itself was still created successfully, so just land on it normally.
+        }
+      }
+
       router.push(`/student/help-requests/${helpRequest.id}`);
     } catch (err) {
       setError(err.message);

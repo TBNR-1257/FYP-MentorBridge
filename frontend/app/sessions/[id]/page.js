@@ -20,6 +20,9 @@ export default function SessionRoomPage({ params }) {
   const [error, setError] = useState(null);
   const [notesDraft, setNotesDraft] = useState("");
   const [savingNotes, setSavingNotes] = useState(false);
+  const [meetingLinkDraft, setMeetingLinkDraft] = useState("");
+  const [savingMeetingLink, setSavingMeetingLink] = useState(false);
+  const [editingMeetingLink, setEditingMeetingLink] = useState(false);
   const [completing, setCompleting] = useState(false);
   const [ratingScore, setRatingScore] = useState(null);
   const [ratingComment, setRatingComment] = useState("");
@@ -48,6 +51,7 @@ export default function SessionRoomPage({ params }) {
         if (cancelled) return;
         setSession(session);
         setNotesDraft(session.mentorNotes || "");
+        setMeetingLinkDraft(session.meetingLink || "");
         setMessages(messages);
 
         if (session.status === "SCHEDULED") {
@@ -97,6 +101,29 @@ export default function SessionRoomPage({ params }) {
       setError(err.message);
     } finally {
       setSavingNotes(false);
+    }
+  }
+
+  function openGoogleCalendarSetup() {
+    const params = new URLSearchParams({
+      action: "TEMPLATE",
+      text: `MentorBridge session: ${session.helpRequest.topic}`,
+      details:
+        "Agree on a time here, then add Google Meet video conferencing to this event and paste the generated link back into the MentorBridge session page.",
+    });
+    window.open(`https://calendar.google.com/calendar/u/0/r/eventedit?${params.toString()}`, "_blank");
+  }
+
+  async function saveMeetingLink() {
+    setSavingMeetingLink(true);
+    try {
+      const { session: updated } = await api.setSessionMeetingLink(token, id, meetingLinkDraft.trim() || null);
+      setSession(updated);
+      setEditingMeetingLink(false);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSavingMeetingLink(false);
     }
   }
 
@@ -168,9 +195,75 @@ export default function SessionRoomPage({ params }) {
         {error && <p className="text-sm text-red-600">{error}</p>}
 
         {session.format === "VIDEO_CALL" && (
-          <div className="flex h-40 items-center justify-center rounded-lg border border-dashed border-stone-300 bg-white text-sm text-stone-500">
-            Video call — coming soon. Use text chat below for now.
-          </div>
+          <section className="rounded-lg border border-stone-200 bg-white p-4 text-sm">
+            <h2 className="mb-2 font-medium">Video call</h2>
+
+            {isMentor && (
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={openGoogleCalendarSetup}
+                  type="button"
+                  className="self-start rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-sm hover:bg-stone-50"
+                >
+                  Set up a Google Meet
+                </button>
+                <p className="text-xs text-stone-500">
+                  This opens Google Calendar so you can agree on a time and add Meet video conferencing yourself —
+                  paste the resulting link below once it&apos;s ready.
+                </p>
+
+                {session.meetingLink && !editingMeetingLink ? (
+                  <div className="flex items-center gap-3">
+                    <a
+                      href={session.meetingLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-lg bg-teal-600 px-3 py-1.5 text-white hover:bg-teal-700"
+                    >
+                      Open Google Meet
+                    </a>
+                    <button
+                      onClick={() => setEditingMeetingLink(true)}
+                      type="button"
+                      className="text-xs text-stone-500 hover:underline"
+                    >
+                      Update link
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      value={meetingLinkDraft}
+                      onChange={(e) => setMeetingLinkDraft(e.target.value)}
+                      placeholder="Paste the Google Meet link here"
+                      className="flex-1 rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-sm"
+                    />
+                    <button
+                      onClick={saveMeetingLink}
+                      disabled={savingMeetingLink}
+                      className="rounded-lg bg-teal-600 px-3 py-1.5 text-sm text-white hover:bg-teal-700 disabled:opacity-50"
+                    >
+                      {savingMeetingLink ? "Saving…" : "Save link"}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {isStudent &&
+              (session.meetingLink ? (
+                <a
+                  href={session.meetingLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-block rounded-lg bg-teal-600 px-3 py-1.5 text-white hover:bg-teal-700"
+                >
+                  Join Google Meet
+                </a>
+              ) : (
+                <p className="text-stone-500">Your mentor hasn&apos;t set up the video call yet.</p>
+              ))}
+          </section>
         )}
 
         <div className="flex h-80 flex-col rounded-lg border border-stone-200 bg-white">

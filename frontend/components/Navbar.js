@@ -4,9 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth, dashboardPathForRole } from "@/lib/auth-context";
+import { useSidebar } from "@/lib/sidebar-context";
 
 export default function Navbar() {
   const { user, loading, logout } = useAuth();
+  const { toggle: toggleSidebar } = useSidebar();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
@@ -29,9 +31,22 @@ export default function Navbar() {
 
   return (
     <header className="flex items-center justify-between border-b border-stone-200 bg-white px-6 py-4">
-      <Link href="/" className="font-semibold">
-        MentorBridge
-      </Link>
+      <div className="flex items-center gap-3">
+        {!loading && user && (
+          <button
+            onClick={toggleSidebar}
+            aria-label="Toggle navigation menu"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-stone-600 hover:bg-stone-100"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-5 w-5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        )}
+        <Link href="/" className="font-semibold">
+          MentorBridge
+        </Link>
+      </div>
 
       {!loading && (
         <nav className="flex items-center gap-4 text-sm">

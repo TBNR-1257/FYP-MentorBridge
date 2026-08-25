@@ -109,6 +109,14 @@ async function setMentorNotes(sessionId, userId, mentorNotes) {
   return prisma.session.update({ where: { id: sessionId }, data: { mentorNotes }, include: DETAIL_INCLUDE });
 }
 
+async function setMeetingLink(sessionId, userId, meetingLink) {
+  const { isMentor } = await loadSessionForParticipant(sessionId, userId);
+  if (!isMentor) {
+    throw new HttpError(403, "Only the mentor can set up the meeting link");
+  }
+  return prisma.session.update({ where: { id: sessionId }, data: { meetingLink }, include: DETAIL_INCLUDE });
+}
+
 async function setConfidence(sessionId, userId, { confidenceBefore, confidenceAfter }) {
   const { isStudent } = await loadSessionForParticipant(sessionId, userId);
   if (!isStudent) {
@@ -205,6 +213,7 @@ module.exports = {
   listMessages,
   startSession,
   setMentorNotes,
+  setMeetingLink,
   setConfidence,
   completeSession,
   addRating,

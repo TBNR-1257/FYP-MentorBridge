@@ -2,6 +2,7 @@ const prisma = require("../config/prisma");
 const HttpError = require("../utils/HttpError");
 const helpRequestService = require("../services/helpRequest.service");
 const { resolveSubjects } = require("../services/subject.service");
+const { getMentorStanding } = require("../services/gamification.service");
 const { updateMentorProfileSchema } = require("../schemas/profile.schema");
 
 async function getOwnMentorProfile(userId) {
@@ -134,17 +135,23 @@ async function listServiceHours(req, res) {
 async function listBadges(req, res) {
   const mentorProfile = await getOwnMentorProfile(req.user.id);
 
-  const [catalog, earned] = await Promise.all([
+  const [catalog, earned, standing] = await Promise.all([
     prisma.badge.findMany({ orderBy: [{ metric: "asc" }, { threshold: "asc" }] }),
     prisma.mentorBadge.findMany({ where: { mentorProfileId: mentorProfile.id } }),
+    getMentorStanding(mentorProfile.id, req.user.id),
   ]);
 
   const earnedByBadgeId = new Map(earned.map((e) => [e.badgeId, e.earnedAt]));
-  const badges = catalog.map((badge) => ({
-    ...badge,
-    earned: earnedByBadgeId.has(badge.id),
-    earnedAt: earnedByBadgeId.get(badge.id) || null,
-  }));
+  const badges = catalog.map((badge) => {
+    const currentValue = standing[badge.metric];
+    return {
+      ...badge,
+      earned: earnedByBadgeId.has(badge.id),
+      earnedAt: earnedByBadgeId.get(badge.id) || null,
+      currentValue,
+      progress: Math.min(1, currentValue / badge.threshold),
+    };
+  });
 
   res.json({ badges });
 }

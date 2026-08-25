@@ -17,4 +17,8 @@ const completeSessionSchema = z.object({
   outcome: z.enum(["COMPLETED", "NO_SHOW"]),
 });
 
-module.exports = { setNotesSchema, setConfidenceSchema, completeSessionSchema };
+const setMeetingLinkSchema = z.object({
+  meetingLink: z.string().url().nullable(),
+});
+
+module.exports = { setNotesSchema, setConfidenceSchema, completeSessionSchema, setMeetingLinkSchema };

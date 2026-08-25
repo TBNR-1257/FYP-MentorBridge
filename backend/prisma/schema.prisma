@@ -252,6 +252,10 @@ model Session {
   confidenceAfter  Int? // 1-5 self-rated confidence, logged after the session
   mentorNotes      String?
 
+  // Set by the mentor once a time is actually agreed (e.g. in chat) — never
+  // auto-generated from scheduledAt, since that can go stale if the time shifts.
+  meetingLink String?
+
   chatMessages   ChatMessage[]
   ratings        Rating[]
   serviceHourLog ServiceHourLog?
