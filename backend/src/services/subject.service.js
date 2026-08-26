@@ -38,7 +38,7 @@ async function listVerifiedMentorsForSubject(subjectId, search) {
     where: {
       verificationStatus: "VERIFIED",
       subjects: { some: { subjectId } },
-      ...(search ? { user: { name: { contains: search, mode: "insensitive" } } } : {}),
+      user: { isActive: true, ...(search ? { name: { contains: search, mode: "insensitive" } } : {}) },
     },
     include: {
       user: { select: { id: true, name: true, ratingsReceived: { select: { score: true } } } },
@@ -132,6 +132,7 @@ async function listActiveCoursesForSubject(subjectId, search) {
     where: {
       subjectId,
       status: "ACTIVE",
+      mentorProfile: { user: { isActive: true } },
       ...(search ? { title: { contains: search, mode: "insensitive" } } : {}),
     },
     include: {

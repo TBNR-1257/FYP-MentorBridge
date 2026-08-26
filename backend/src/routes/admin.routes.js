@@ -13,5 +13,11 @@ router.patch("/mentors/:id/reject", asyncHandler(controller.rejectMentor));
 router.get("/subject-requests", asyncHandler(controller.listSubjectRequests));
 router.patch("/subject-requests/:id/approve", asyncHandler(controller.approveSubjectRequest));
 router.patch("/subject-requests/:id/reject", asyncHandler(controller.rejectSubjectRequest));
+router.get("/users", asyncHandler(controller.listUsers));
+router.patch("/users/:id/suspend", asyncHandler(controller.suspendUser));
+router.patch("/users/:id/reactivate", asyncHandler(controller.reactivateUser));
+router.get("/analytics", asyncHandler(controller.getAnalytics));
+router.get("/sessions", asyncHandler(controller.listSessions));
+router.get("/courses", asyncHandler(controller.listCourses));
 
 module.exports = router;

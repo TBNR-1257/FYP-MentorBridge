@@ -94,7 +94,8 @@ async function login(req, res) {
     return res.status(401).json({ error: "Invalid email or password" });
   }
   if (!user.isActive) {
-    return res.status(403).json({ error: "This account has been suspended" });
+    const suffix = user.suspendedReason ? `: ${user.suspendedReason}` : "";
+    return res.status(403).json({ error: `This account has been suspended${suffix}` });
   }
 
   const valid = await bcrypt.compare(password, user.passwordHash);

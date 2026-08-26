@@ -187,6 +187,41 @@ export function verifyMentor(token, mentorProfileId) {
   });
 }
 
+export function listUsers(token, { role, search } = {}) {
+  const params = new URLSearchParams();
+  if (role) params.set("role", role);
+  if (search) params.set("search", search);
+  const query = params.toString() ? `?${params.toString()}` : "";
+  return apiFetch(`/admin/users${query}`, { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export function suspendUser(token, id, reason) {
+  return apiFetch(`/admin/users/${id}/suspend`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ reason }),
+  });
+}
+
+export function reactivateUser(token, id) {
+  return apiFetch(`/admin/users/${id}/reactivate`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export function getAnalytics(token) {
+  return apiFetch("/admin/analytics", { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export function listAdminSessions(token) {
+  return apiFetch("/admin/sessions", { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export function listAdminCourses(token) {
+  return apiFetch("/admin/courses", { headers: { Authorization: `Bearer ${token}` } });
+}
+
 export function rejectMentor(token, mentorProfileId) {
   return apiFetch(`/admin/mentors/${mentorProfileId}/reject`, {
     method: "PATCH",

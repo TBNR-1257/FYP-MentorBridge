@@ -7,7 +7,7 @@ const { computeSessionHours, safelyCheckBadges } = require("./session.service");
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 const COURSE_DETAIL_INCLUDE = {
-  mentorProfile: { include: { user: { select: { id: true, name: true } } } },
+  mentorProfile: { include: { user: { select: { id: true, name: true, isActive: true } } } },
   subject: true,
   timeSlots: true,
   _count: { select: { enrollments: true } },
@@ -88,7 +88,7 @@ async function loadCourseAccess(courseId, userId) {
 
 async function getCourseDetail(courseId, userId) {
   const { course, isMentor, isEnrolled } = await loadCourseAccess(courseId, userId);
-  const members = course.enrollments.map((e) => e.studentProfile.user.name);
+  const members = course.enrollments.map((e) => ({ name: e.studentProfile.user.name, isActive: e.studentProfile.user.isActive }));
   const { enrollments, ...courseWithoutEnrollments } = course;
   return { ...courseWithoutEnrollments, isMentor, isEnrolled, members };
 }

@@ -160,6 +160,12 @@ export default function CourseRoomPage({ params }) {
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 
+        {!isMentor && canAccessRoom && !course.mentorProfile.user.isActive && (
+          <p className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-800">
+            {course.mentorProfile.user.name}&apos;s account has been suspended — they may not respond.
+          </p>
+        )}
+
         {!canAccessRoom ? (
           <button
             onClick={handleJoin}
@@ -314,7 +320,15 @@ export default function CourseRoomPage({ params }) {
             {course.members.length > 0 && (
               <section className="rounded-lg border border-stone-200 bg-white p-4 text-sm">
                 <h2 className="mb-2 font-medium">Students ({course.members.length})</h2>
-                <p className="text-stone-600">{course.members.join(", ")}</p>
+                <p className="text-stone-600">
+                  {course.members.map((m, i) => (
+                    <span key={m.name + i}>
+                      {i > 0 && ", "}
+                      {m.name}
+                      {!m.isActive && <span className="text-red-600"> (suspended)</span>}
+                    </span>
+                  ))}
+                </p>
               </section>
             )}
           </>

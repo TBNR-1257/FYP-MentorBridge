@@ -9,6 +9,7 @@ async function generateMatches(helpRequest) {
   const eligibleMentors = await prisma.mentorProfile.findMany({
     where: {
       verificationStatus: "VERIFIED",
+      user: { isActive: true },
       subjects: { some: { subjectId: helpRequest.subjectId } },
     },
     include: {
@@ -56,10 +57,10 @@ async function createSuggestionIfEligible(tx, helpRequestId, mentorProfileId) {
   const helpRequest = await tx.helpRequest.findUnique({ where: { id: helpRequestId } });
   const mentor = await tx.mentorProfile.findUnique({
     where: { id: mentorProfileId },
-    include: { availability: true, sessions: { where: { status: "SCHEDULED" } }, subjects: true },
+    include: { availability: true, sessions: { where: { status: "SCHEDULED" } }, subjects: true, user: { select: { isActive: true } } },
   });
 
-  if (!helpRequest || !mentor || mentor.verificationStatus !== "VERIFIED") return null;
+  if (!helpRequest || !mentor || mentor.verificationStatus !== "VERIFIED" || !mentor.user.isActive) return null;
   if (!mentor.subjects.some((s) => s.subjectId === helpRequest.subjectId)) return null;
 
   const [scored] = scoreMentors(

@@ -38,7 +38,7 @@ async function listQueue(req, res) {
       helpRequest: {
         include: {
           subject: true,
-          studentProfile: { include: { user: { select: { id: true, name: true } } } },
+          studentProfile: { include: { user: { select: { id: true, name: true, isActive: true } } } },
         },
       },
     },

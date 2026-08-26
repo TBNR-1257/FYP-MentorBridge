@@ -19,7 +19,11 @@ const LINKS_BY_ROLE = {
     { href: "/mentor/sessions", label: "My Sessions" },
     { href: "/mentor/courses", label: "My Courses" },
   ],
-  ADMIN: (role) => [{ href: dashboardPathForRole(role), label: "Dashboard" }],
+  ADMIN: (role) => [
+    { href: dashboardPathForRole(role), label: "Dashboard" },
+    { href: "/admin/users", label: "All Users" },
+    { href: "/admin/monitoring", label: "Monitoring" },
+  ],
 };
 
 export default function Sidebar() {

@@ -13,11 +13,11 @@ async function safelyCheckBadges(mentorProfileId, mentorUserId) {
 }
 
 const DETAIL_INCLUDE = {
-  mentorProfile: { include: { user: { select: { id: true, name: true } } } },
+  mentorProfile: { include: { user: { select: { id: true, name: true, isActive: true } } } },
   helpRequest: {
     include: {
       subject: true,
-      studentProfile: { include: { user: { select: { id: true, name: true } } } },
+      studentProfile: { include: { user: { select: { id: true, name: true, isActive: true } } } },
     },
   },
   ratings: { include: { rater: { select: { id: true, name: true } } } },

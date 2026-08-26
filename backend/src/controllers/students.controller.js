@@ -65,7 +65,7 @@ async function getHelpRequest(req, res) {
     include: {
       subject: true,
       sessions: true,
-      requestedMentorProfile: { include: { user: { select: { id: true, name: true } } } },
+      requestedMentorProfile: { include: { user: { select: { id: true, name: true, isActive: true } } } },
       matchSuggestions: {
         orderBy: { rank: "asc" },
         include: {

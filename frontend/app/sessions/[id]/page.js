@@ -174,6 +174,7 @@ export default function SessionRoomPage({ params }) {
   const isOpen = session.status === "SCHEDULED";
   const canRate = !isOpen;
   const myRating = session.ratings.find((r) => r.raterId === user.id);
+  const counterpart = isMentor ? session.helpRequest.studentProfile.user : session.mentorProfile.user;
 
   return (
     <main className="flex flex-1 flex-col items-center px-6 py-8">
@@ -192,6 +193,12 @@ export default function SessionRoomPage({ params }) {
         </div>
 
         {error && <p className="text-sm text-red-600">{error}</p>}
+
+        {!counterpart.isActive && (
+          <p className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-800">
+            {counterpart.name}&apos;s account has been suspended — they may not respond.
+          </p>
+        )}
 
         <section className="rounded-lg border border-stone-200 bg-white p-4 text-sm">
           <h2 className="mb-2 font-medium">Video call</h2>

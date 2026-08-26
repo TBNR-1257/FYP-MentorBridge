@@ -88,6 +88,12 @@ export default function HelpRequestDetailPage({ params }) {
               Waiting for <span className="font-medium">{helpRequest.requestedMentorProfile.user.name}</span> to
               accept your request.
             </p>
+            {!helpRequest.requestedMentorProfile.user.isActive && (
+              <p className="mt-1 text-red-700">
+                This mentor&apos;s account has been suspended — they may not respond. You can cancel and request
+                someone else.
+              </p>
+            )}
             <button
               onClick={handleCancel}
               disabled={cancelling}

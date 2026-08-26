@@ -101,7 +101,12 @@ export default function MentorQueuePage() {
                       <p className="text-stone-500">
                         Language: {match.helpRequest.languagePreferences.join(", ")}
                       </p>
-                      <p className="text-stone-500">Student: {match.helpRequest.studentProfile.user.name}</p>
+                      <p className="text-stone-500">
+                        Student: {match.helpRequest.studentProfile.user.name}
+                        {!match.helpRequest.studentProfile.user.isActive && (
+                          <span className="ml-1 text-red-600">(account suspended)</span>
+                        )}
+                      </p>
                       <p className="text-stone-500">Match score: {match.score}</p>
                     </div>
                     <div className="flex shrink-0 gap-2">
