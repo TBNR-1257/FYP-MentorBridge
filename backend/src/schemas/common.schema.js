@@ -1,6 +1,6 @@
 const { z } = require("zod");
 
-const EDUCATION_LEVELS = ["PRIMARY", "SECONDARY", "UNDERGRADUATE", "POSTGRADUATE", "OTHER"];
+const DIFFICULTY_LEVELS = ["BEGINNER", "INTERMEDIATE", "EXPERT"];
 
 const availabilitySlotSchema = z.object({
   dayOfWeek: z.number().int().min(0).max(6),
@@ -8,4 +8,4 @@ const availabilitySlotSchema = z.object({
   endTime: z.string().regex(/^\d{2}:\d{2}$/, "endTime must be in HH:mm format"),
 });
 
-module.exports = { EDUCATION_LEVELS, availabilitySlotSchema };
+module.exports = { DIFFICULTY_LEVELS, availabilitySlotSchema };

@@ -217,4 +217,6 @@ module.exports = {
   setConfidence,
   completeSession,
   addRating,
+  computeSessionHours,
+  safelyCheckBadges,
 };

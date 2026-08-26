@@ -1,4 +1,5 @@
 const prisma = require("../config/prisma");
+const subjectService = require("../services/subject.service");
 
 const MENTOR_LIST_INCLUDE = {
   user: { select: { id: true, name: true, email: true, createdAt: true } },
@@ -57,4 +58,26 @@ async function rejectMentor(req, res) {
   res.json({ mentor: updated });
 }
 
-module.exports = { listMentors, verifyMentor, rejectMentor };
+async function listSubjectRequests(req, res) {
+  const requests = await subjectService.listSubjectRequests(req.query.status);
+  res.json({ requests });
+}
+
+async function approveSubjectRequest(req, res) {
+  const { request, subject } = await subjectService.approveSubjectRequest(req.params.id, req.user.id);
+  res.json({ request, subject });
+}
+
+async function rejectSubjectRequest(req, res) {
+  const request = await subjectService.rejectSubjectRequest(req.params.id, req.user.id);
+  res.json({ request });
+}
+
+module.exports = {
+  listMentors,
+  verifyMentor,
+  rejectMentor,
+  listSubjectRequests,
+  approveSubjectRequest,
+  rejectSubjectRequest,
+};

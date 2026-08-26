@@ -13,5 +13,6 @@ router.get("/help-requests/:id", asyncHandler(controller.getHelpRequest));
 router.post("/help-requests/:id/request-mentor", asyncHandler(controller.requestMentor));
 router.post("/help-requests/:id/cancel-request", asyncHandler(controller.cancelRequest));
 router.get("/progress", asyncHandler(controller.getProgress));
+router.patch("/profile", asyncHandler(controller.updateProfile));
 
 module.exports = router;

@@ -11,5 +11,7 @@ router.get("/", asyncHandler(controller.list));
 
 // Auth required (any role) — powers the student browse-mentors-by-subject page.
 router.get("/:id/mentors", requireAuth, asyncHandler(controller.listMentorsForSubject));
+router.get("/:id/courses", requireAuth, asyncHandler(controller.listCoursesForSubject));
+router.post("/requests", requireAuth, asyncHandler(controller.requestSubject));
 
 module.exports = router;

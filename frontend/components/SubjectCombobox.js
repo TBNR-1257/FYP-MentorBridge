@@ -4,11 +4,16 @@ import { useEffect, useRef, useState } from "react";
 import { useSubjects } from "@/lib/useSubjects";
 
 // Single-subject picker: type to filter a dropdown of existing subjects, click
-// one to select it. Typing a name with no exact match still works (creates a
-// new subject on submit) via a "+ Add" option, so the taxonomy can still grow.
-export default function SubjectCombobox({ value, onChange, placeholder, required, id }) {
+// one to select it. With allowCreate (default, mentor-facing use), typing a
+// name with no exact match still works via a "+ Add" option. With
+// allowCreate={false} (student-facing use, e.g. a help request's subject),
+// that option instead submits a subject request via onRequestNew for admin
+// review — the field itself stays unfilled until an existing subject is picked.
+export default function SubjectCombobox({ value, onChange, placeholder, required, id, allowCreate = true, onRequestNew }) {
   const subjects = useSubjects();
   const [open, setOpen] = useState(false);
+  const [requesting, setRequesting] = useState(false);
+  const [requestedNames, setRequestedNames] = useState([]);
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -25,6 +30,19 @@ export default function SubjectCombobox({ value, onChange, placeholder, required
   const filtered = subjects.filter((s) => s.name.toLowerCase().includes(query));
   const exactMatch = subjects.some((s) => s.name.toLowerCase() === query);
   const canCreate = query.length > 0 && !exactMatch;
+  const alreadyRequested = requestedNames.includes(query);
+
+  async function handleRequestNew() {
+    const name = value.trim();
+    if (!name || !onRequestNew) return;
+    setRequesting(true);
+    try {
+      await onRequestNew(name);
+      setRequestedNames((prev) => [...prev, name.toLowerCase()]);
+    } finally {
+      setRequesting(false);
+    }
+  }
 
   return (
     <div ref={containerRef} className="relative">
@@ -57,7 +75,7 @@ export default function SubjectCombobox({ value, onChange, placeholder, required
               </button>
             </li>
           ))}
-          {canCreate && (
+          {allowCreate && canCreate && (
             <li>
               <button
                 type="button"
@@ -65,6 +83,22 @@ export default function SubjectCombobox({ value, onChange, placeholder, required
                 className="block w-full px-3 py-2 text-left text-sm text-stone-600 hover:bg-stone-100"
               >
                 Use &quot;{value.trim()}&quot; as a new subject
+              </button>
+            </li>
+          )}
+          {!allowCreate && canCreate && onRequestNew && (
+            <li>
+              <button
+                type="button"
+                onClick={handleRequestNew}
+                disabled={requesting || alreadyRequested}
+                className="block w-full px-3 py-2 text-left text-sm text-stone-600 hover:bg-stone-100 disabled:opacity-50"
+              >
+                {alreadyRequested
+                  ? `Requested "${value.trim()}" — pending admin review`
+                  : requesting
+                    ? "Requesting…"
+                    : `Not listed? Request "${value.trim()}" be added`}
               </button>
             </li>
           )}

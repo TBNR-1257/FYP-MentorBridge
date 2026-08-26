@@ -28,6 +28,123 @@ export function listMentorsForSubject(token, subjectId, search) {
   });
 }
 
+export function listCoursesForSubject(token, subjectId, search) {
+  const query = search ? `?search=${encodeURIComponent(search)}` : "";
+  return apiFetch(`/subjects/${subjectId}/courses${query}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export function requestSubject(token, name) {
+  return apiFetch("/subjects/requests", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ name }),
+  });
+}
+
+export function listSubjectRequests(token, status) {
+  const query = status ? `?status=${status}` : "";
+  return apiFetch(`/admin/subject-requests${query}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export function approveSubjectRequest(token, id) {
+  return apiFetch(`/admin/subject-requests/${id}/approve`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export function rejectSubjectRequest(token, id) {
+  return apiFetch(`/admin/subject-requests/${id}/reject`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export function updateStudentProfile(token, payload) {
+  return apiFetch("/students/profile", {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+}
+
+export function createCourse(token, payload) {
+  return apiFetch("/courses", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+}
+
+export function listMyCourses(token) {
+  return apiFetch("/courses/mine", { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export function getCourse(token, id) {
+  return apiFetch(`/courses/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export function listCourseMessages(token, id) {
+  return apiFetch(`/courses/${id}/messages`, { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export function joinCourse(token, id) {
+  return apiFetch(`/courses/${id}/join`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export function leaveCourse(token, id) {
+  return apiFetch(`/courses/${id}/leave`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export function setCourseMeetingLink(token, id, meetingLink) {
+  return apiFetch(`/courses/${id}/meeting-link`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ meetingLink }),
+  });
+}
+
+export function listMyCourseSessions(token) {
+  return apiFetch("/courses/sessions", { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export function getCourseSession(token, id) {
+  return apiFetch(`/courses/sessions/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export function startCourseSession(token, id) {
+  return apiFetch(`/courses/sessions/${id}/start`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export function setCourseSessionNotes(token, id, mentorNotes) {
+  return apiFetch(`/courses/sessions/${id}/notes`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ mentorNotes }),
+  });
+}
+
+export function completeCourseSession(token, id, outcome) {
+  return apiFetch(`/courses/sessions/${id}/complete`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ outcome }),
+  });
+}
+
 export function updateMentorProfile(token, payload) {
   return apiFetch("/mentors/profile", {
     method: "PATCH",

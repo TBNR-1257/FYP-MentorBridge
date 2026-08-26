@@ -1,8 +1,9 @@
 const prisma = require("../config/prisma");
 const HttpError = require("../utils/HttpError");
 const { createHelpRequestSchema, selectMentorSchema } = require("../schemas/helpRequest.schema");
+const { updateStudentProfileSchema } = require("../schemas/profile.schema");
 const helpRequestService = require("../services/helpRequest.service");
-const { resolveSubject } = require("../services/subject.service");
+const { resolveSubject, findSubjectByName } = require("../services/subject.service");
 const { computeWeeklyStreak } = require("../utils/streak");
 
 async function getOwnStudentProfile(userId) {
@@ -28,9 +29,9 @@ async function createHelpRequest(req, res) {
       studentProfileId: studentProfile.id,
       subjectId: subject.id,
       topic: data.topic,
+      description: data.description,
       urgencyLevel: data.urgencyLevel,
-      sessionFormat: data.sessionFormat,
-      educationLevel: data.educationLevel,
+      difficultyLevel: data.difficultyLevel,
       languagePreferences: data.languagePreferences,
       preferredDayOfWeek: data.preferredDayOfWeek,
       preferredStartTime: data.preferredStartTime,
@@ -132,6 +133,32 @@ async function getProgress(req, res) {
   res.json({ sessions, streakWeeks });
 }
 
+// Interests are subjects the student declares an interest in (capped at 3) to
+// drive the "recommended courses" dashboard section. Unlike a help request's
+// subject or a mentor's taught subjects, a student can't implicitly create a
+// new Subject here — findSubjectByName throws if it doesn't already exist.
+async function updateProfile(req, res) {
+  const parsed = updateStudentProfileSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.issues.map((i) => i.message).join(", ") });
+  }
+
+  const studentProfile = await getOwnStudentProfile(req.user.id);
+  const subjects = await Promise.all(parsed.data.interests.map((name) => findSubjectByName(name)));
+
+  await prisma.studentInterest.deleteMany({ where: { studentProfileId: studentProfile.id } });
+  await prisma.studentInterest.createMany({
+    data: subjects.map((s) => ({ studentProfileId: studentProfile.id, subjectId: s.id })),
+  });
+
+  const interests = await prisma.studentInterest.findMany({
+    where: { studentProfileId: studentProfile.id },
+    include: { subject: true },
+  });
+
+  res.json({ interests: interests.map((i) => i.subject) });
+}
+
 module.exports = {
   createHelpRequest,
   listMyHelpRequests,
@@ -139,4 +166,5 @@ module.exports = {
   requestMentor,
   cancelRequest,
   getProgress,
+  updateProfile,
 };

@@ -17,9 +17,11 @@ async function sumServiceHours(mentorProfileId) {
 }
 
 async function countCompletedSessions(mentorProfileId) {
-  return prisma.session.count({
-    where: { mentorProfileId, status: "COMPLETED" },
-  });
+  const [oneOnOne, course] = await Promise.all([
+    prisma.session.count({ where: { mentorProfileId, status: "COMPLETED" } }),
+    prisma.courseSession.count({ where: { course: { mentorProfileId }, status: "COMPLETED" } }),
+  ]);
+  return oneOnOne + course;
 }
 
 // A mentor's current value for each badge metric — shared by badge-awarding

@@ -162,7 +162,6 @@ async function confirmMatch(helpRequestId, mentorProfileId) {
       data: {
         helpRequestId,
         mentorProfileId,
-        format: helpRequest.sessionFormat,
         status: "SCHEDULED",
         scheduledAt,
       },

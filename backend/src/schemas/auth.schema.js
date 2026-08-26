@@ -8,10 +8,12 @@ const baseFields = {
 };
 
 // Students don't specify subject, education level, or language preference at
-// signup — those are captured per help request instead.
+// signup — those are captured per help request instead. Interests are optional
+// and only drive dashboard recommendations, so they're capped but not required.
 const studentRegisterSchema = z.object({
   ...baseFields,
   role: z.literal("STUDENT"),
+  interests: z.array(z.string()).max(3, "You can pick at most 3 subjects of interest").optional(),
 });
 
 const mentorRegisterSchema = z.object({

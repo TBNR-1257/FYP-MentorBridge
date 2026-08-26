@@ -7,13 +7,8 @@ import SubjectCombobox from "@/components/SubjectCombobox";
 import { useSubjects } from "@/lib/useSubjects";
 import * as api from "@/lib/api";
 
-const EDUCATION_LEVELS = ["PRIMARY", "SECONDARY", "UNDERGRADUATE", "POSTGRADUATE", "OTHER"];
+const DIFFICULTY_LEVELS = ["BEGINNER", "INTERMEDIATE", "EXPERT"];
 const URGENCY_LEVELS = ["LOW", "MEDIUM", "HIGH"];
-const SESSION_FORMATS = [
-  { value: "TEXT_CHAT", label: "Text chat" },
-  { value: "VIDEO_CALL", label: "Video call" },
-  { value: "IN_PERSON", label: "In person" },
-];
 const DAYS = [
   { value: 0, label: "Sunday" },
   { value: 1, label: "Monday" },
@@ -42,10 +37,10 @@ export default function NewHelpRequestPage() {
 
   const [subject, setSubject] = useState("");
   const [topic, setTopic] = useState("");
-  const [educationLevel, setEducationLevel] = useState(EDUCATION_LEVELS[0]);
+  const [description, setDescription] = useState("");
+  const [difficultyLevel, setDifficultyLevel] = useState(DIFFICULTY_LEVELS[1]);
   const [languagePreferences, setLanguagePreferences] = useState("");
   const [urgencyLevel, setUrgencyLevel] = useState("MEDIUM");
-  const [sessionFormat, setSessionFormat] = useState("VIDEO_CALL");
   const [preferredDayOfWeek, setPreferredDayOfWeek] = useState(1);
   const [preferredStartTime, setPreferredStartTime] = useState("14:00");
   const [preferredEndTime, setPreferredEndTime] = useState("16:00");
@@ -61,6 +56,10 @@ export default function NewHelpRequestPage() {
 
   if (loading) return null;
 
+  async function handleRequestNewSubject(name) {
+    await api.requestSubject(token, name);
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError(null);
@@ -69,10 +68,10 @@ export default function NewHelpRequestPage() {
       const { helpRequest } = await api.createHelpRequest(token, {
         subject,
         topic,
-        educationLevel,
+        description: description.trim() || undefined,
+        difficultyLevel,
         languagePreferences: csvToList(languagePreferences),
         urgencyLevel,
-        sessionFormat,
         preferredDayOfWeek: Number(preferredDayOfWeek),
         preferredStartTime,
         preferredEndTime,
@@ -104,9 +103,11 @@ export default function NewHelpRequestPage() {
           <SubjectCombobox
             id="help-request-subject"
             required
-            placeholder="Search or add a subject…"
+            placeholder="Search subjects…"
             value={subject}
             onChange={setSubject}
+            allowCreate={false}
+            onRequestNew={handleRequestNewSubject}
           />
         </Field>
 
@@ -120,13 +121,23 @@ export default function NewHelpRequestPage() {
           />
         </Field>
 
-        <Field label="Your education level">
+        <Field label="Additional details (optional)">
+          <textarea
+            rows={3}
+            placeholder="Anything else that would help a mentor understand what you need…"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="rounded-lg border border-stone-300 bg-white px-3 py-2"
+          />
+        </Field>
+
+        <Field label="Difficulty level">
           <select
-            value={educationLevel}
-            onChange={(e) => setEducationLevel(e.target.value)}
+            value={difficultyLevel}
+            onChange={(e) => setDifficultyLevel(e.target.value)}
             className="rounded-lg border border-stone-300 bg-white px-3 py-2"
           >
-            {EDUCATION_LEVELS.map((level) => (
+            {DIFFICULTY_LEVELS.map((level) => (
               <option key={level} value={level}>
                 {level}
               </option>
@@ -153,20 +164,6 @@ export default function NewHelpRequestPage() {
             {URGENCY_LEVELS.map((level) => (
               <option key={level} value={level}>
                 {level}
-              </option>
-            ))}
-          </select>
-        </Field>
-
-        <Field label="Session format">
-          <select
-            value={sessionFormat}
-            onChange={(e) => setSessionFormat(e.target.value)}
-            className="rounded-lg border border-stone-300 bg-white px-3 py-2"
-          >
-            {SESSION_FORMATS.map((f) => (
-              <option key={f.value} value={f.value}>
-                {f.label}
               </option>
             ))}
           </select>

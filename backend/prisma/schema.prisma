@@ -17,12 +17,21 @@ enum Role {
   ADMIN
 }
 
-enum EducationLevel {
-  PRIMARY
-  SECONDARY
-  UNDERGRADUATE
-  POSTGRADUATE
-  OTHER
+enum DifficultyLevel {
+  BEGINNER
+  INTERMEDIATE
+  EXPERT
+}
+
+enum CourseStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum SubjectRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 enum VerificationStatus {
@@ -35,12 +44,6 @@ enum UrgencyLevel {
   LOW
   MEDIUM
   HIGH
-}
-
-enum SessionFormat {
-  TEXT_CHAT
-  VIDEO_CALL
-  IN_PERSON
 }
 
 enum HelpRequestStatus {
@@ -90,7 +93,10 @@ model User {
   ratingsGiven      Rating[]        @relation("RatingRater")
   ratingsReceived   Rating[]        @relation("RatingRatee")
   chatMessages      ChatMessage[]
+  courseChatMessages CourseChatMessage[]
   verifiedMentors   MentorProfile[] @relation("MentorVerifiedBy")
+  subjectRequests         SubjectRequest[] @relation("SubjectRequestRequestedBy")
+  reviewedSubjectRequests SubjectRequest[] @relation("SubjectRequestReviewedBy")
 }
 
 // Deliberately minimal: subject, education level, and language preference are
@@ -102,6 +108,8 @@ model StudentProfile {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   helpRequests HelpRequest[]
+  interests       StudentInterest[]
+  enrolledCourses CourseEnrollment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -129,6 +137,7 @@ model MentorProfile {
   badges                MentorBadge[]
   endorsements          Endorsement[]
   requestedHelpRequests HelpRequest[]     @relation("HelpRequestRequestedMentor")
+  courses               Course[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -147,6 +156,8 @@ model Subject {
   mentors      MentorSubject[]
   helpRequests HelpRequest[]
   endorsements Endorsement[]
+  courses      Course[]
+  interests    StudentInterest[]
 }
 
 model MentorSubject {
@@ -183,10 +194,10 @@ model HelpRequest {
   subjectId String
   subject   Subject @relation(fields: [subjectId], references: [id])
 
-  topic         String
-  urgencyLevel  UrgencyLevel
-  sessionFormat SessionFormat
-  status        HelpRequestStatus @default(OPEN)
+  topic        String
+  description  String?
+  urgencyLevel UrgencyLevel
+  status       HelpRequestStatus @default(OPEN)
 
   // Set when a student requests a specific mentor from their ranked suggestions;
   // only that mentor can act on the request until they accept or decline it.
@@ -194,7 +205,7 @@ model HelpRequest {
   requestedMentorProfile   MentorProfile? @relation("HelpRequestRequestedMentor", fields: [requestedMentorProfileId], references: [id])
 
   // Specified per request rather than fixed on StudentProfile.
-  educationLevel      EducationLevel
+  difficultyLevel     DifficultyLevel
   languagePreferences String[]
 
   // Preferred slot for the session, matched against MentorProfile.availability
@@ -241,7 +252,6 @@ model Session {
   mentorProfileId String
   mentorProfile   MentorProfile @relation(fields: [mentorProfileId], references: [id])
 
-  format SessionFormat
   status SessionStatus @default(SCHEDULED)
 
   scheduledAt DateTime
@@ -281,6 +291,110 @@ model ChatMessage {
 }
 
 // =========================================================
+// Courses (mentor-run recurring group classes)
+// =========================================================
+
+model Course {
+  id              String        @id @default(uuid())
+  mentorProfileId String
+  mentorProfile   MentorProfile @relation(fields: [mentorProfileId], references: [id], onDelete: Cascade)
+
+  subjectId String
+  subject   Subject @relation(fields: [subjectId], references: [id])
+
+  title           String
+  description     String
+  difficultyLevel DifficultyLevel
+  status          CourseStatus @default(ACTIVE)
+
+  // Set by the mentor once created — same manual Google Meet handoff pattern as
+  // a 1:1 session, reused across every weekly occurrence of this course.
+  meetingLink String?
+
+  timeSlots   CourseTimeSlot[]
+  enrollments CourseEnrollment[]
+  sessions    CourseSession[]
+  messages    CourseChatMessage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([subjectId])
+  @@index([mentorProfileId])
+}
+
+// Recurring weekly meeting time for a course; a course can have more than one
+// (e.g. Mon and Wed sections of the same class), each running its own series
+// of CourseSession occurrences.
+model CourseTimeSlot {
+  id       String @id @default(uuid())
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  dayOfWeek Int // 0 = Sunday ... 6 = Saturday
+  startTime String // "HH:mm"
+  endTime   String // "HH:mm"
+
+  sessions CourseSession[]
+
+  @@index([courseId])
+}
+
+// A student's standing membership in a course — instant self-serve join/leave,
+// no mentor approval (unlike 1:1 help-request matching).
+model CourseEnrollment {
+  courseId         String
+  course           Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  studentProfileId String
+  studentProfile   StudentProfile @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
+
+  joinedAt DateTime @default(now())
+
+  @@id([courseId, studentProfileId])
+}
+
+// One dated weekly occurrence of a course's class, mirroring the 1:1 Session
+// lifecycle (start/complete/no-show) so course teaching counts toward service
+// hours and badges. Whole-session-level only — no per-student attendance yet.
+model CourseSession {
+  id               String          @id @default(uuid())
+  courseId         String
+  course           Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseTimeSlotId String?
+  courseTimeSlot   CourseTimeSlot? @relation(fields: [courseTimeSlotId], references: [id], onDelete: SetNull)
+
+  status SessionStatus @default(SCHEDULED)
+
+  scheduledAt DateTime
+  startedAt   DateTime?
+  endedAt     DateTime?
+  mentorNotes String?
+
+  serviceHourLog ServiceHourLog?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([courseId])
+}
+
+// Continuous group chat for a course — one ongoing thread for the whole class,
+// separate from individual CourseSession occurrences.
+model CourseChatMessage {
+  id       String @id @default(uuid())
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  senderId String
+  sender   User   @relation(fields: [senderId], references: [id])
+
+  content String
+  sentAt  DateTime @default(now())
+
+  @@index([courseId])
+}
+
+// =========================================================
 // Ratings & Feedback
 // =========================================================
 
@@ -310,12 +424,18 @@ model Rating {
 // Gamification & Service Hours
 // =========================================================
 
+// Logged against either a 1:1 Session or a group CourseSession — exactly one of
+// sessionId/courseSessionId is set (enforced in the service layer, not the DB),
+// so a mentor's total hours/badge standing naturally covers both kinds of
+// teaching from a single summed table.
 model ServiceHourLog {
-  id              String        @id @default(uuid())
-  sessionId       String        @unique
-  session         Session       @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  id              String         @id @default(uuid())
+  sessionId       String?        @unique
+  session         Session?       @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  courseSessionId String?        @unique
+  courseSession   CourseSession? @relation(fields: [courseSessionId], references: [id], onDelete: Cascade)
   mentorProfileId String
-  mentorProfile   MentorProfile @relation(fields: [mentorProfileId], references: [id], onDelete: Cascade)
+  mentorProfile   MentorProfile  @relation(fields: [mentorProfileId], references: [id], onDelete: Cascade)
 
   hours    Decimal  @db.Decimal(5, 2)
   loggedAt DateTime @default(now())
@@ -381,4 +501,39 @@ model Notification {
   createdAt DateTime @default(now())
 
   @@index([userId, isRead])
+}
+
+// =========================================================
+// Student interests & subject moderation
+// =========================================================
+
+// A student's declared subjects of interest (capped at 3, enforced in the
+// service layer) — drives the "recommended courses" dashboard section.
+model StudentInterest {
+  studentProfileId String
+  studentProfile   StudentProfile @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
+  subjectId        String
+  subject          Subject        @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@id([studentProfileId, subjectId])
+}
+
+// A student-submitted request for a new subject tag that doesn't exist yet —
+// students can't create Subject rows directly (unlike mentors, whose profile
+// already goes through admin verification); an admin reviews and approves or
+// rejects each request from the admin dashboard.
+model SubjectRequest {
+  id            String               @id @default(uuid())
+  name          String
+  requestedById String
+  requestedBy   User                 @relation("SubjectRequestRequestedBy", fields: [requestedById], references: [id], onDelete: Cascade)
+  status        SubjectRequestStatus @default(PENDING)
+
+  reviewedAt        DateTime?
+  reviewedByAdminId String?
+  reviewedByAdmin   User?     @relation("SubjectRequestReviewedBy", fields: [reviewedByAdminId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([status])
 }

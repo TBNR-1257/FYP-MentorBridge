@@ -72,10 +72,10 @@ export default function HelpRequestDetailPage({ params }) {
 
         <h1 className="mt-2 text-2xl font-semibold">{helpRequest.topic}</h1>
         <p className="text-stone-600">
-          {helpRequest.subject.name} · {helpRequest.educationLevel} · {helpRequest.urgencyLevel} urgency ·{" "}
-          {helpRequest.sessionFormat}
+          {helpRequest.subject.name} · {helpRequest.difficultyLevel} · {helpRequest.urgencyLevel} urgency
         </p>
         <p className="text-stone-600">Language: {helpRequest.languagePreferences.join(", ")}</p>
+        {helpRequest.description && <p className="mt-2 text-sm text-stone-700">{helpRequest.description}</p>}
         <p className="mt-1 text-sm">
           Status: <span className="font-medium">{helpRequest.status}</span>
         </p>

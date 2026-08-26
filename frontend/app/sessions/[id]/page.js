@@ -187,16 +187,14 @@ export default function SessionRoomPage({ params }) {
           </Link>
           <h1 className="mt-2 text-2xl font-semibold">{session.helpRequest.topic}</h1>
           <p className="text-stone-600">
-            {session.helpRequest.subject.name} · {session.format} · Status:{" "}
-            <span className="font-medium">{session.status}</span>
+            {session.helpRequest.subject.name} · Status: <span className="font-medium">{session.status}</span>
           </p>
         </div>
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 
-        {session.format === "VIDEO_CALL" && (
-          <section className="rounded-lg border border-stone-200 bg-white p-4 text-sm">
-            <h2 className="mb-2 font-medium">Video call</h2>
+        <section className="rounded-lg border border-stone-200 bg-white p-4 text-sm">
+          <h2 className="mb-2 font-medium">Video call</h2>
 
             {isMentor && (
               <div className="flex flex-col gap-3">
@@ -264,7 +262,6 @@ export default function SessionRoomPage({ params }) {
                 <p className="text-stone-500">Your mentor hasn&apos;t set up the video call yet.</p>
               ))}
           </section>
-        )}
 
         <div className="flex h-80 flex-col rounded-lg border border-stone-200 bg-white">
           <div className="flex-1 overflow-y-auto p-3">

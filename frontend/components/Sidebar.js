@@ -8,7 +8,7 @@ const LINKS_BY_ROLE = {
   STUDENT: (role) => [
     { href: dashboardPathForRole(role), label: "Dashboard" },
     { href: "/student/profile", label: "My Profile" },
-    { href: "/browse", label: "Browse Mentors" },
+    { href: "/browse", label: "Browse Subjects/Courses" },
     { href: "/student/help-requests", label: "My Help Requests" },
     { href: "/student/sessions", label: "My Sessions" },
   ],
@@ -17,6 +17,7 @@ const LINKS_BY_ROLE = {
     { href: "/mentor/profile", label: "My Profile" },
     { href: "/mentor/queue", label: "Student Requests" },
     { href: "/mentor/sessions", label: "My Sessions" },
+    { href: "/mentor/courses", label: "My Courses" },
   ],
   ADMIN: (role) => [{ href: dashboardPathForRole(role), label: "Dashboard" }],
 };

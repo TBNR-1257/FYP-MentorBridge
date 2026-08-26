@@ -1,4 +1,5 @@
 const prisma = require("../config/prisma");
+const HttpError = require("../utils/HttpError");
 
 // Case-insensitive so "chemistry" and "Chemistry" resolve to the same row instead
 // of silently fragmenting the taxonomy (which would break subject-based matching
@@ -70,4 +71,87 @@ async function listVerifiedMentorsForSubject(subjectId, search) {
     });
 }
 
-module.exports = { resolveSubject, resolveSubjects, listSubjects, listVerifiedMentorsForSubject };
+// Lookup-only counterpart to resolveSubject, used anywhere a student is
+// choosing a subject — students can't silently create new taxonomy entries
+// the way a mentor can (a mentor's additions are still gated by admin
+// verification of their profile; a student has no equivalent review step).
+async function findSubjectByName(name) {
+  const trimmed = name.trim();
+  const subject = await prisma.subject.findFirst({
+    where: { name: { equals: trimmed, mode: "insensitive" } },
+  });
+  if (!subject) {
+    throw new HttpError(400, `Subject "${trimmed}" doesn't exist yet — request it to be added first`);
+  }
+  return subject;
+}
+
+async function createSubjectRequest(name, userId) {
+  return prisma.subjectRequest.create({
+    data: { name: name.trim(), requestedById: userId },
+  });
+}
+
+async function listSubjectRequests(status) {
+  return prisma.subjectRequest.findMany({
+    where: status ? { status } : {},
+    include: { requestedBy: { select: { id: true, name: true, email: true } } },
+    orderBy: { createdAt: "asc" },
+  });
+}
+
+async function approveSubjectRequest(id, adminId) {
+  const request = await prisma.subjectRequest.findUnique({ where: { id } });
+  if (!request) {
+    throw new HttpError(404, "Subject request not found");
+  }
+
+  const subject = await resolveSubject(request.name);
+  const updated = await prisma.subjectRequest.update({
+    where: { id },
+    data: { status: "APPROVED", reviewedAt: new Date(), reviewedByAdminId: adminId },
+  });
+
+  return { request: updated, subject };
+}
+
+async function rejectSubjectRequest(id, adminId) {
+  const request = await prisma.subjectRequest.findUnique({ where: { id } });
+  if (!request) {
+    throw new HttpError(404, "Subject request not found");
+  }
+
+  return prisma.subjectRequest.update({
+    where: { id },
+    data: { status: "REJECTED", reviewedAt: new Date(), reviewedByAdminId: adminId },
+  });
+}
+
+async function listActiveCoursesForSubject(subjectId, search) {
+  return prisma.course.findMany({
+    where: {
+      subjectId,
+      status: "ACTIVE",
+      ...(search ? { title: { contains: search, mode: "insensitive" } } : {}),
+    },
+    include: {
+      mentorProfile: { include: { user: { select: { id: true, name: true } } } },
+      timeSlots: true,
+      _count: { select: { enrollments: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+module.exports = {
+  resolveSubject,
+  resolveSubjects,
+  findSubjectByName,
+  listSubjects,
+  listVerifiedMentorsForSubject,
+  createSubjectRequest,
+  listSubjectRequests,
+  approveSubjectRequest,
+  rejectSubjectRequest,
+  listActiveCoursesForSubject,
+};

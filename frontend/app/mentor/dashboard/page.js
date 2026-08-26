@@ -9,6 +9,7 @@ import * as api from "@/lib/api";
 const QUICK_LINKS = [
   { href: "/mentor/queue", label: "Student Requests", description: "Review and accept help requests" },
   { href: "/mentor/sessions", label: "My Sessions", description: "View past and upcoming sessions" },
+  { href: "/mentor/courses", label: "My Courses", description: "Run and create group courses" },
   { href: "/mentor/profile", label: "Edit Profile", description: "Update your subjects and availability" },
 ];
 
@@ -104,7 +105,7 @@ export default function MentorDashboardPage() {
             )}
           </section>
 
-          <div className="grid w-full max-w-2xl grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="grid w-full max-w-2xl grid-cols-1 gap-4 sm:grid-cols-2">
             {QUICK_LINKS.map((link) => (
               <Link
                 key={link.href}

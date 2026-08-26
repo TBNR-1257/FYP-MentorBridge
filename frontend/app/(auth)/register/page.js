@@ -27,6 +27,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [subjects, setSubjects] = useState([]);
+  const [interests, setInterests] = useState([]);
   const [languages, setLanguages] = useState("");
   const [qualifications, setQualifications] = useState("");
   const [availability, setAvailability] = useState([emptySlot()]);
@@ -40,7 +41,7 @@ export default function RegisterPage() {
 
     const payload =
       role === "STUDENT"
-        ? { email, password, name, role }
+        ? { email, password, name, role, interests }
         : {
             email,
             password,
@@ -115,9 +116,21 @@ export default function RegisterPage() {
         </Field>
 
         {role === "STUDENT" ? (
-          <p className="text-sm text-stone-500">
-            That&apos;s it — you&apos;ll specify subject, level, and language when you post a help request.
-          </p>
+          <>
+            <Field label="Subjects/topics you're interested in (optional, up to 3)">
+              <SubjectTagSelect
+                value={interests}
+                onChange={setInterests}
+                placeholder="Search subjects…"
+                allowCreate={false}
+                max={3}
+              />
+            </Field>
+            <p className="text-sm text-stone-500">
+              You&apos;ll specify subject, level, and language separately when you post a help request. Your
+              interests just power course recommendations on your dashboard — you can change them later.
+            </p>
+          </>
         ) : (
           <>
             <Field label="Qualifications">
