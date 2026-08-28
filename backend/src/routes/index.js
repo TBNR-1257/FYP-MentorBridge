@@ -9,6 +9,7 @@ router.use("/mentors", require("./mentors.routes"));
 router.use("/matching", require("./matching.routes"));
 router.use("/sessions", require("./sessions.routes"));
 router.use("/courses", require("./courses.routes"));
+router.use("/notifications", require("./notifications.routes"));
 router.use("/gamification", require("./gamification.routes"));
 router.use("/admin", require("./admin.routes"));
 

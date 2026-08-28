@@ -1,4 +1,5 @@
 const service = require("../services/session.service");
+const resourceService = require("../services/resource.service");
 const {
   setNotesSchema,
   setConfidenceSchema,
@@ -6,6 +7,7 @@ const {
   setMeetingLinkSchema,
 } = require("../schemas/session.schema");
 const { createRatingSchema } = require("../schemas/rating.schema");
+const { createResourceSchema } = require("../schemas/resource.schema");
 
 async function list(req, res) {
   const sessions = await service.listMySessions(req.user.id, req.user.role);
@@ -72,4 +74,30 @@ async function rate(req, res) {
   res.status(201).json({ rating });
 }
 
-module.exports = { list, detail, messages, start, notes, meetingLink, confidence, complete, rate };
+async function listResources(req, res) {
+  const resources = await resourceService.listSessionResources(req.params.id, req.user.id);
+  res.json({ resources });
+}
+
+async function addResource(req, res) {
+  const parsed = createResourceSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.issues.map((i) => i.message).join(", ") });
+  }
+  const resource = await resourceService.addSessionResource(req.params.id, req.user.id, parsed.data);
+  res.status(201).json({ resource });
+}
+
+module.exports = {
+  list,
+  detail,
+  messages,
+  start,
+  notes,
+  meetingLink,
+  confidence,
+  complete,
+  rate,
+  listResources,
+  addResource,
+};

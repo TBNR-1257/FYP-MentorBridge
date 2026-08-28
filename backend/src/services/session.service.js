@@ -1,6 +1,7 @@
 const prisma = require("../config/prisma");
 const HttpError = require("../utils/HttpError");
 const { checkAndAwardBadges } = require("./gamification.service");
+const { notify } = require("./notification.service");
 
 // Badge awarding is a side-effect of the main action (completing a session,
 // leaving a rating) — if it fails, the primary action should still succeed.
@@ -203,6 +204,9 @@ async function addRating(sessionId, userId, data) {
   if (!isMentor) {
     await safelyCheckBadges(session.mentorProfileId, session.mentorProfile.userId);
   }
+
+  const raterName = isMentor ? session.mentorProfile.user.name : session.helpRequest.studentProfile.user.name;
+  await notify(rateeId, "RATING_RECEIVED", `${raterName} left you a rating.`, `/sessions/${sessionId}`);
 
   return rating;
 }

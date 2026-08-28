@@ -1,4 +1,5 @@
 const prisma = require("../config/prisma");
+const { notify } = require("./notification.service");
 
 const GOOD_RATING_THRESHOLD = 4; // out of 5
 
@@ -60,6 +61,12 @@ async function checkAndAwardBadges(mentorProfileId, mentorUserId) {
     data: newlyEarned.map((badge) => ({ mentorProfileId, badgeId: badge.id })),
     skipDuplicates: true,
   });
+
+  await Promise.all(
+    newlyEarned.map((badge) =>
+      notify(mentorUserId, "BADGE_EARNED", `You earned the "${badge.name}" badge!`, "/mentor/dashboard")
+    )
+  );
 
   return newlyEarned;
 }

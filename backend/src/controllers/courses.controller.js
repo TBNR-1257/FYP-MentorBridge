@@ -1,12 +1,14 @@
 const prisma = require("../config/prisma");
 const HttpError = require("../utils/HttpError");
 const service = require("../services/course.service");
+const resourceService = require("../services/resource.service");
 const {
   createCourseSchema,
   setCourseMeetingLinkSchema,
   setCourseSessionNotesSchema,
   completeCourseSessionSchema,
 } = require("../schemas/course.schema");
+const { createResourceSchema } = require("../schemas/resource.schema");
 
 async function getOwnMentorProfile(userId) {
   const profile = await prisma.mentorProfile.findUnique({ where: { userId } });
@@ -94,6 +96,20 @@ async function completeSession(req, res) {
   res.json({ session });
 }
 
+async function listResources(req, res) {
+  const resources = await resourceService.listCourseResources(req.params.id, req.user.id);
+  res.json({ resources });
+}
+
+async function addResource(req, res) {
+  const parsed = createResourceSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.issues.map((i) => i.message).join(", ") });
+  }
+  const resource = await resourceService.addCourseResource(req.params.id, req.user.id, parsed.data);
+  res.status(201).json({ resource });
+}
+
 module.exports = {
   create,
   listMine,
@@ -107,4 +123,6 @@ module.exports = {
   startSession,
   sessionNotes,
   completeSession,
+  listResources,
+  addResource,
 };

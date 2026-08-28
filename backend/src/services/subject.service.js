@@ -1,5 +1,6 @@
 const prisma = require("../config/prisma");
 const HttpError = require("../utils/HttpError");
+const { computeAvgRating } = require("../utils/ratings");
 
 // Case-insensitive so "chemistry" and "Chemistry" resolve to the same row instead
 // of silently fragmenting the taxonomy (which would break subject-based matching
@@ -49,8 +50,7 @@ async function listVerifiedMentorsForSubject(subjectId, search) {
 
   return mentors
     .map((mentor) => {
-      const scores = mentor.user.ratingsReceived.map((r) => r.score).filter((s) => s != null);
-      const avgRating = scores.length ? scores.reduce((sum, s) => sum + s, 0) / scores.length : null;
+      const { avgRating, ratingCount } = computeAvgRating(mentor.user.ratingsReceived);
       return {
         id: mentor.id,
         name: mentor.user.name,
@@ -60,7 +60,7 @@ async function listVerifiedMentorsForSubject(subjectId, search) {
         subjects: mentor.subjects.map((s) => s.subject),
         badges: mentor.badges.map((b) => ({ ...b.badge, earnedAt: b.earnedAt })),
         avgRating,
-        ratingCount: scores.length,
+        ratingCount,
       };
     })
     .sort((a, b) => {

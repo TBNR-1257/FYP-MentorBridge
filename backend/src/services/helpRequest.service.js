@@ -2,6 +2,7 @@ const prisma = require("../config/prisma");
 const HttpError = require("../utils/HttpError");
 const { scoreMentors, nextOccurrence } = require("../utils/matching");
 const { resolveSubject } = require("./subject.service");
+const { notify } = require("./notification.service");
 
 // Scores every VERIFIED mentor who teaches the request's subject, persists the
 // ranking as MatchSuggestion rows, and returns them with mentor details attached.
@@ -124,6 +125,11 @@ async function cancelRequest(helpRequestId) {
 // it so the student can request someone else (or the same mentor can browse
 // and accept it later via the open queue, if still eligible).
 async function declineRequest(helpRequestId, mentorProfileId) {
+  const existing = await prisma.helpRequest.findUnique({
+    where: { id: helpRequestId },
+    include: { studentProfile: true, requestedMentorProfile: { include: { user: true } } },
+  });
+
   const result = await prisma.helpRequest.updateMany({
     where: { id: helpRequestId, status: "REQUESTED", requestedMentorProfileId: mentorProfileId },
     data: { status: "OPEN", requestedMentorProfileId: null },
@@ -131,13 +137,20 @@ async function declineRequest(helpRequestId, mentorProfileId) {
   if (result.count === 0) {
     throw new HttpError(409, "This request is not awaiting your response");
   }
+
+  await notify(
+    existing.studentProfile.userId,
+    "REQUEST_DECLINED",
+    `${existing.requestedMentorProfile.user.name} declined your request for "${existing.topic}".`,
+    `/student/help-requests/${helpRequestId}`
+  );
 }
 
 // Atomically confirms a match: succeeds if the request is still OPEN (anyone it
 // was suggested to may claim it) or REQUESTED specifically to this mentor.
 // Creates the resulting Session.
 async function confirmMatch(helpRequestId, mentorProfileId) {
-  return prisma.$transaction(async (tx) => {
+  const session = await prisma.$transaction(async (tx) => {
     const suggestion = await tx.matchSuggestion.findUnique({
       where: { helpRequestId_mentorProfileId: { helpRequestId, mentorProfileId } },
     });
@@ -168,6 +181,19 @@ async function confirmMatch(helpRequestId, mentorProfileId) {
       },
     });
   });
+
+  const [helpRequest, mentorProfile] = await Promise.all([
+    prisma.helpRequest.findUnique({ where: { id: helpRequestId }, include: { studentProfile: true } }),
+    prisma.mentorProfile.findUnique({ where: { id: mentorProfileId }, include: { user: true } }),
+  ]);
+  await notify(
+    helpRequest.studentProfile.userId,
+    "REQUEST_ACCEPTED",
+    `${mentorProfile.user.name} accepted your request for "${helpRequest.topic}".`,
+    `/sessions/${session.id}`
+  );
+
+  return session;
 }
 
 module.exports = { generateMatches, requestMentor, cancelRequest, declineRequest, confirmMatch };

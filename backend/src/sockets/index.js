@@ -46,6 +46,11 @@ function registerSocketHandlers(io) {
   });
 
   io.on("connection", (socket) => {
+    // Personal room every tab/device for this user joins, so a notification
+    // (from notification.service.js) reaches them regardless of what page
+    // they're currently on.
+    socket.join(`user:${socket.data.user.id}`);
+
     socket.on("join_session", async ({ sessionId }, ack) => {
       if (!(await isParticipant(sessionId, socket.data.user.id))) {
         return ack?.({ error: "Not a participant in this session" });

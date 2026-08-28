@@ -2,6 +2,7 @@ const prisma = require("../config/prisma");
 const HttpError = require("../utils/HttpError");
 const subjectService = require("../services/subject.service");
 const analyticsService = require("../services/analytics.service");
+const { notify } = require("../services/notification.service");
 
 const MENTOR_LIST_INCLUDE = {
   user: { select: { id: true, name: true, email: true, createdAt: true } },
@@ -38,6 +39,8 @@ async function verifyMentor(req, res) {
     include: MENTOR_LIST_INCLUDE,
   });
 
+  await notify(updated.user.id, "MENTOR_VERIFIED", "Your mentor profile has been verified.", "/mentor/dashboard");
+
   res.json({ mentor: updated });
 }
 
@@ -57,6 +60,8 @@ async function rejectMentor(req, res) {
     include: MENTOR_LIST_INCLUDE,
   });
 
+  await notify(updated.user.id, "MENTOR_REJECTED", "Your mentor profile application was not approved.", "/mentor/profile");
+
   res.json({ mentor: updated });
 }
 
@@ -67,11 +72,13 @@ async function listSubjectRequests(req, res) {
 
 async function approveSubjectRequest(req, res) {
   const { request, subject } = await subjectService.approveSubjectRequest(req.params.id, req.user.id);
+  await notify(request.requestedById, "SUBJECT_REQUEST_APPROVED", `Your subject request "${subject.name}" was approved.`);
   res.json({ request, subject });
 }
 
 async function rejectSubjectRequest(req, res) {
   const request = await subjectService.rejectSubjectRequest(req.params.id, req.user.id);
+  await notify(request.requestedById, "SUBJECT_REQUEST_REJECTED", `Your subject request "${request.name}" was not approved.`);
   res.json({ request });
 }
 

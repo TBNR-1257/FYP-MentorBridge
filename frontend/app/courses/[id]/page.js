@@ -4,6 +4,7 @@ import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { connectSocket } from "@/lib/socket";
+import ResourceList from "@/components/ResourceList";
 import * as api from "@/lib/api";
 
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -22,6 +23,7 @@ export default function CourseRoomPage({ params }) {
   const [editingMeetingLink, setEditingMeetingLink] = useState(false);
   const [savingMeetingLink, setSavingMeetingLink] = useState(false);
   const [actioningSessionId, setActioningSessionId] = useState(null);
+  const [resources, setResources] = useState([]);
 
   const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -35,12 +37,14 @@ export default function CourseRoomPage({ params }) {
       setMeetingLinkDraft(course.meetingLink || "");
 
       if (course.isMentor || course.isEnrolled) {
-        const [{ messages }, { sessions: allSessions }] = await Promise.all([
+        const [{ messages }, { sessions: allSessions }, { resources }] = await Promise.all([
           api.listCourseMessages(token, id),
           api.listMyCourseSessions(token),
+          api.listCourseResources(token, id),
         ]);
         setMessages(messages);
         setSessions(allSessions.filter((s) => s.courseId === id));
+        setResources(resources);
       }
     } catch (err) {
       setError(err.message);
@@ -113,6 +117,11 @@ export default function CourseRoomPage({ params }) {
     } finally {
       setSavingMeetingLink(false);
     }
+  }
+
+  async function handleAddResource(payload) {
+    const { resource } = await api.addCourseResource(token, id, payload);
+    setResources((prev) => [resource, ...prev]);
   }
 
   async function handleSessionAction(sessionId, action, extra) {
@@ -316,6 +325,8 @@ export default function CourseRoomPage({ params }) {
                 </ul>
               )}
             </section>
+
+            <ResourceList resources={resources} canAdd={isMentor} onAdd={handleAddResource} />
 
             {course.members.length > 0 && (
               <section className="rounded-lg border border-stone-200 bg-white p-4 text-sm">

@@ -192,7 +192,9 @@ function MentorCard({ mentor, token, subjectId, helpRequestIdFromLink, openReque
     <div className="rounded-lg border border-stone-200 bg-white p-4 text-sm">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="font-medium text-stone-900">{mentor.name}</p>
+          <Link href={`/mentors/${mentor.id}`} className="font-medium text-stone-900 hover:underline">
+            {mentor.name}
+          </Link>
           <p className="text-stone-500">
             {mentor.avgRating !== null ? `★ ${mentor.avgRating.toFixed(1)} (${mentor.ratingCount})` : "No ratings yet"}
           </p>

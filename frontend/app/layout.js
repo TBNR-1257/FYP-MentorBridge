@@ -2,6 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { SidebarProvider } from "@/lib/sidebar-context";
+import { NotificationProvider } from "@/lib/notification-context";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 
@@ -28,11 +29,13 @@ export default function RootLayout({ children }) {
     >
       <body className="min-h-full flex flex-col">
         <AuthProvider>
-          <SidebarProvider>
-            <Navbar />
-            <Sidebar />
-            {children}
-          </SidebarProvider>
+          <NotificationProvider>
+            <SidebarProvider>
+              <Navbar />
+              <Sidebar />
+              {children}
+            </SidebarProvider>
+          </NotificationProvider>
         </AuthProvider>
       </body>
     </html>

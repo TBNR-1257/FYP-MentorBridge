@@ -2,9 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import jsPDF from "jspdf";
 import { useRequireRole, useAuth } from "@/lib/auth-context";
 import Badge from "@/components/Badge";
 import * as api from "@/lib/api";
+
+const TEAL = [13, 148, 136]; // matches the app's teal-600 accent
+const STONE = [68, 64, 60];
+const MAX_LOG_ROWS = 18;
 
 const QUICK_LINKS = [
   { href: "/mentor/queue", label: "Student Requests", description: "Review and accept help requests" },
@@ -36,28 +41,70 @@ export default function MentorDashboardPage() {
   const profile = user.mentorProfile;
 
   function downloadCertificate() {
-    const lines = [
-      "MentorBridge — Certificate of Volunteer Service",
-      "",
-      `Mentor: ${user.name}`,
-      `Email: ${user.email}`,
-      `Total verified service hours: ${serviceHours.totalHours}`,
-      `Sessions completed: ${serviceHours.logs.length}`,
-      `Issued: ${new Date().toLocaleDateString()}`,
-      "",
-      "Session log:",
-      ...serviceHours.logs.map(
-        (log) =>
-          `  ${new Date(log.loggedAt).toLocaleDateString()} — ${log.session.helpRequest.subject.name} — ${log.hours}h`
-      ),
-    ];
-    const blob = new Blob([lines.join("\n")], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `mentorbridge-certificate-${user.name.replace(/\s+/g, "-").toLowerCase()}.txt`;
-    link.click();
-    URL.revokeObjectURL(url);
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const centerX = pageWidth / 2;
+
+    // Letterhead border
+    doc.setDrawColor(...TEAL);
+    doc.setLineWidth(2);
+    doc.rect(24, 24, pageWidth - 48, doc.internal.pageSize.getHeight() - 48);
+
+    doc.setTextColor(...TEAL);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(20);
+    doc.text("MentorBridge", centerX, 80, { align: "center" });
+
+    doc.setTextColor(...STONE);
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "normal");
+    doc.text("Certificate of Volunteer Service", centerX, 105, { align: "center" });
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(24);
+    doc.text(user.name, centerX, 150, { align: "center" });
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    doc.text(
+      `has volunteered ${serviceHours.totalHours} hours as a mentor across ${serviceHours.logs.length} completed session${
+        serviceHours.logs.length === 1 ? "" : "s"
+      }.`,
+      centerX,
+      175,
+      { align: "center", maxWidth: pageWidth - 160 }
+    );
+
+    doc.setFontSize(10);
+    doc.setTextColor(120, 113, 108);
+    doc.text(`Issued ${new Date().toLocaleDateString()} by MentorBridge`, centerX, 200, { align: "center" });
+
+    let y = 240;
+    doc.setDrawColor(230, 230, 228);
+    doc.line(60, y, pageWidth - 60, y);
+    y += 24;
+
+    doc.setTextColor(...STONE);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text("Session log", 60, y);
+    y += 18;
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    const rows = serviceHours.logs.slice(0, MAX_LOG_ROWS);
+    for (const log of rows) {
+      doc.text(new Date(log.loggedAt).toLocaleDateString(), 60, y);
+      doc.text(log.subjectName, 180, y);
+      doc.text(`${log.hours}h`, pageWidth - 90, y, { align: "right" });
+      y += 16;
+    }
+    if (serviceHours.logs.length > MAX_LOG_ROWS) {
+      doc.setTextColor(150, 145, 140);
+      doc.text(`+ ${serviceHours.logs.length - MAX_LOG_ROWS} more session(s) not shown`, 60, y);
+    }
+
+    doc.save(`mentorbridge-certificate-${user.name.replace(/\s+/g, "-").toLowerCase()}.pdf`);
   }
 
   return (

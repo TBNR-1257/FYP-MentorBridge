@@ -5,6 +5,7 @@ const { Server } = require("socket.io");
 
 const app = require("./app");
 const { registerSocketHandlers } = require("./sockets");
+const { setIo } = require("./sockets/io");
 
 const PORT = process.env.PORT || 4000;
 
@@ -14,6 +15,7 @@ const io = new Server(server, {
   cors: { origin: process.env.CORS_ORIGIN || "http://localhost:3000" },
 });
 
+setIo(io);
 registerSocketHandlers(io);
 
 server.listen(PORT, () => {

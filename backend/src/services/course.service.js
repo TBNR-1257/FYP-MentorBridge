@@ -3,6 +3,7 @@ const HttpError = require("../utils/HttpError");
 const { nextOccurrence } = require("../utils/matching");
 const { resolveSubject } = require("./subject.service");
 const { computeSessionHours, safelyCheckBadges } = require("./session.service");
+const { notify } = require("./notification.service");
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -109,6 +110,17 @@ async function joinCourse(courseId, userId) {
     update: {},
     create: { courseId, studentProfileId: studentProfile.id },
   });
+
+  const [student, mentorProfile] = await Promise.all([
+    prisma.user.findUnique({ where: { id: userId } }),
+    prisma.mentorProfile.findUnique({ where: { id: course.mentorProfileId } }),
+  ]);
+  await notify(
+    mentorProfile.userId,
+    "COURSE_JOINED",
+    `${student.name} joined your course "${course.title}".`,
+    `/courses/${courseId}`
+  );
 
   return getCourseDetail(courseId, userId);
 }

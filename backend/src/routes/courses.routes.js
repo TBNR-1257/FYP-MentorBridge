@@ -21,5 +21,7 @@ router.get("/:id/messages", asyncHandler(controller.messages));
 router.post("/:id/join", asyncHandler(controller.join));
 router.post("/:id/leave", asyncHandler(controller.leave));
 router.patch("/:id/meeting-link", asyncHandler(controller.meetingLink));
+router.get("/:id/resources", asyncHandler(controller.listResources));
+router.post("/:id/resources", asyncHandler(controller.addResource));
 
 module.exports = router;

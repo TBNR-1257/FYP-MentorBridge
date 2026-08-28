@@ -1,4 +1,5 @@
 const prisma = require("../config/prisma");
+const { computeAvgRating } = require("../utils/ratings");
 
 function toCountMap(groupByResult, key = "status") {
   return Object.fromEntries(groupByResult.map((row) => [row[key], row._count._all]));
@@ -90,4 +91,31 @@ async function listAllCourses() {
   });
 }
 
-module.exports = { getPlatformAnalytics, listAllSessions, listAllCourses };
+async function getMentorLeaderboard() {
+  const mentors = await prisma.mentorProfile.findMany({
+    where: { verificationStatus: "VERIFIED", user: { isActive: true } },
+    include: {
+      user: { select: { id: true, name: true, ratingsReceived: { select: { score: true } } } },
+      serviceHourLogs: { select: { hours: true } },
+      badges: true,
+    },
+  });
+
+  return mentors
+    .map((m) => {
+      const { avgRating, ratingCount } = computeAvgRating(m.user.ratingsReceived);
+      const totalHours = m.serviceHourLogs.reduce((sum, log) => sum + Number(log.hours), 0);
+      return {
+        mentorProfileId: m.id,
+        name: m.user.name,
+        totalHours: Math.round(totalHours * 100) / 100,
+        avgRating,
+        ratingCount,
+        badgeCount: m.badges.length,
+      };
+    })
+    .sort((a, b) => b.totalHours - a.totalHours || (b.avgRating || 0) - (a.avgRating || 0))
+    .slice(0, 10);
+}
+
+module.exports = { getPlatformAnalytics, listAllSessions, listAllCourses, getMentorLeaderboard };

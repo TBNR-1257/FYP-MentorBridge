@@ -210,6 +210,64 @@ export function reactivateUser(token, id) {
   });
 }
 
+export function listNotifications(token) {
+  return apiFetch("/notifications", { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export function markNotificationRead(token, id) {
+  return apiFetch(`/notifications/${id}/read`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export function markAllNotificationsRead(token) {
+  return apiFetch("/notifications/read-all", {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export function getMentorPublicProfile(token, id) {
+  return apiFetch(`/mentors/${id}/public-profile`, { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export function addEndorsement(token, mentorProfileId, payload) {
+  return apiFetch(`/mentors/${mentorProfileId}/endorsements`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+}
+
+export function getMentorLeaderboard(token) {
+  return apiFetch("/mentors/leaderboard", { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export function listSessionResources(token, id) {
+  return apiFetch(`/sessions/${id}/resources`, { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export function addSessionResource(token, id, payload) {
+  return apiFetch(`/sessions/${id}/resources`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+}
+
+export function listCourseResources(token, id) {
+  return apiFetch(`/courses/${id}/resources`, { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export function addCourseResource(token, id, payload) {
+  return apiFetch(`/courses/${id}/resources`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+}
+
 export function getAnalytics(token) {
   return apiFetch("/admin/analytics", { headers: { Authorization: `Bearer ${token}` } });
 }

@@ -5,6 +5,11 @@ const controller = require("../controllers/mentors.controller");
 
 const router = express.Router();
 
+// Public-ish (any authed role) — must come before the blanket MENTOR-only gate below.
+router.get("/leaderboard", requireAuth, asyncHandler(controller.leaderboard));
+router.get("/:id/public-profile", requireAuth, asyncHandler(controller.getPublicProfile));
+router.post("/:id/endorsements", requireAuth, asyncHandler(controller.addEndorsement));
+
 router.use(requireAuth, requireRole("MENTOR"));
 
 router.get("/help-requests/queue", asyncHandler(controller.listQueue));

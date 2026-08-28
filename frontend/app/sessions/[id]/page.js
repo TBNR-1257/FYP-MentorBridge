@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { connectSocket } from "@/lib/socket";
+import ResourceList from "@/components/ResourceList";
 import * as api from "@/lib/api";
 
 const CONFIDENCE_LEVELS = [1, 2, 3, 4, 5];
@@ -29,6 +30,7 @@ export default function SessionRoomPage({ params }) {
   const [ratingNoShow, setRatingNoShow] = useState(false);
   const [ratingMisconduct, setRatingMisconduct] = useState(false);
   const [submittingRating, setSubmittingRating] = useState(false);
+  const [resources, setResources] = useState([]);
 
   const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -44,15 +46,17 @@ export default function SessionRoomPage({ params }) {
 
     async function load() {
       try {
-        const [{ session }, { messages }] = await Promise.all([
+        const [{ session }, { messages }, { resources }] = await Promise.all([
           api.getSession(token, id),
           api.listSessionMessages(token, id),
+          api.listSessionResources(token, id),
         ]);
         if (cancelled) return;
         setSession(session);
         setNotesDraft(session.mentorNotes || "");
         setMeetingLinkDraft(session.meetingLink || "");
         setMessages(messages);
+        setResources(resources);
 
         if (session.status === "SCHEDULED") {
           api
@@ -146,6 +150,11 @@ export default function SessionRoomPage({ params }) {
     } finally {
       setCompleting(false);
     }
+  }
+
+  async function handleAddResource(payload) {
+    const { resource } = await api.addSessionResource(token, id, payload);
+    setResources((prev) => [resource, ...prev]);
   }
 
   async function submitRating(e) {
@@ -354,6 +363,8 @@ export default function SessionRoomPage({ params }) {
             )}
           </section>
         )}
+
+        <ResourceList resources={resources} canAdd={isMentor} onAdd={handleAddResource} />
 
         {canRate && (
           <section className="rounded-lg border border-stone-200 bg-white p-4 text-sm">

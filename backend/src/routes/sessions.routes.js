@@ -16,5 +16,7 @@ router.patch("/:id/meeting-link", asyncHandler(controller.meetingLink));
 router.patch("/:id/confidence", asyncHandler(controller.confidence));
 router.post("/:id/complete", asyncHandler(controller.complete));
 router.post("/:id/rating", asyncHandler(controller.rate));
+router.get("/:id/resources", asyncHandler(controller.listResources));
+router.post("/:id/resources", asyncHandler(controller.addResource));
 
 module.exports = router;

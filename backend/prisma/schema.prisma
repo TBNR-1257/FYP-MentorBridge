@@ -90,6 +90,8 @@ model User {
   mentorProfile  MentorProfile?
 
   sentNotifications Notification[]  @relation("NotificationUser")
+  endorsementsGiven Endorsement[]   @relation("EndorsementEndorser")
+  uploadedResources Resource[]
   ratingsGiven      Rating[]        @relation("RatingRater")
   ratingsReceived   Rating[]        @relation("RatingRatee")
   chatMessages      ChatMessage[]
@@ -269,6 +271,7 @@ model Session {
   chatMessages   ChatMessage[]
   ratings        Rating[]
   serviceHourLog ServiceHourLog?
+  resources      Resource[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -315,6 +318,7 @@ model Course {
   enrollments CourseEnrollment[]
   sessions    CourseSession[]
   messages    CourseChatMessage[]
+  resources   Resource[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -391,6 +395,30 @@ model CourseChatMessage {
   content String
   sentAt  DateTime @default(now())
 
+  @@index([courseId])
+}
+
+// A mentor-shared link (notes, practice sheets, etc.) attached to either a 1:1
+// session or a course — exactly one of sessionId/courseId is set (enforced in
+// the service layer, same pattern as ServiceHourLog's dual FK). Links only, no
+// file upload, to avoid needing new storage/upload-security infrastructure.
+model Resource {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  url         String
+
+  sessionId String?
+  session   Session? @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  courseId  String?
+  course    Course?  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  uploadedById String
+  uploadedBy   User   @relation(fields: [uploadedById], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([sessionId])
   @@index([courseId])
 }
 
@@ -475,6 +503,7 @@ model Endorsement {
   mentorProfileId String
   mentorProfile   MentorProfile @relation(fields: [mentorProfileId], references: [id], onDelete: Cascade)
   endorserId      String
+  endorser        User          @relation("EndorsementEndorser", fields: [endorserId], references: [id], onDelete: Cascade)
   subjectId       String
   subject         Subject       @relation(fields: [subjectId], references: [id])
 
@@ -496,6 +525,7 @@ model Notification {
 
   type    String
   message String
+  link    String?
   isRead  Boolean @default(false)
 
   createdAt DateTime @default(now())
