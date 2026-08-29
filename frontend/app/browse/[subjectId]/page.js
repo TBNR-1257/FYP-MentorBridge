@@ -19,7 +19,7 @@ export default function BrowseSubjectPage({ params }) {
   const helpRequestIdFromLink = searchParams.get("helpRequestId");
   const subjects = useSubjects();
 
-  const [tab, setTab] = useState("mentors");
+  const [tab, setTab] = useState("courses");
   const [search, setSearch] = useState("");
   const [mentors, setMentors] = useState([]);
   const [courses, setCourses] = useState([]);
@@ -64,17 +64,17 @@ export default function BrowseSubjectPage({ params }) {
         <div className="mt-4 flex rounded-lg border border-stone-300 bg-white p-1 text-sm">
           <button
             type="button"
-            onClick={() => setTab("mentors")}
-            className={`rounded px-4 py-1.5 ${tab === "mentors" ? "bg-teal-600 text-white" : ""}`}
-          >
-            Mentors
-          </button>
-          <button
-            type="button"
             onClick={() => setTab("courses")}
             className={`rounded px-4 py-1.5 ${tab === "courses" ? "bg-teal-600 text-white" : ""}`}
           >
             Courses
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab("mentors")}
+            className={`rounded px-4 py-1.5 ${tab === "mentors" ? "bg-teal-600 text-white" : ""}`}
+          >
+            Mentors
           </button>
         </div>
 

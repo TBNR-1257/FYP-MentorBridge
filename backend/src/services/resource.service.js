@@ -37,8 +37,9 @@ async function listSessionResources(sessionId, userId) {
 }
 
 async function addCourseResource(courseId, userId, data) {
-  const { isMentor } = await loadCourseMember(courseId, userId);
+  const { course, isMentor } = await loadCourseMember(courseId, userId);
   if (!isMentor) throw new HttpError(403, "Only the mentor can share a resource");
+  if (course.status !== "ACTIVE") throw new HttpError(409, "This course has ended");
   return prisma.resource.create({ data: { ...data, courseId, uploadedById: userId } });
 }
 

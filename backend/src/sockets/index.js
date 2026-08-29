@@ -88,6 +88,11 @@ function registerSocketHandlers(io) {
         return ack?.({ error: "Not a member of this course" });
       }
 
+      const course = await prisma.course.findUnique({ where: { id: courseId }, select: { status: true } });
+      if (course?.status !== "ACTIVE") {
+        return ack?.({ error: "This course has ended" });
+      }
+
       const message = await prisma.courseChatMessage.create({
         data: { courseId, senderId: socket.data.user.id, content: content.trim() },
         include: { sender: { select: { id: true, name: true } } },

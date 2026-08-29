@@ -11,12 +11,41 @@ const COURSE_DETAIL_INCLUDE = {
   mentorProfile: { include: { user: { select: { id: true, name: true, isActive: true } } } },
   subject: true,
   timeSlots: true,
+  ratings: { include: { rater: { select: { id: true, name: true } } } },
   _count: { select: { enrollments: true } },
 };
 
 const COURSE_SESSION_INCLUDE = {
   course: { include: COURSE_DETAIL_INCLUDE },
 };
+
+// Shared by createCourse and cloneCourse: creates the Course row plus its time
+// slots, then seeds the first upcoming occurrence for each weekly slot.
+async function createCourseAndSeedSessions(tx, mentorProfileId, data) {
+  const created = await tx.course.create({
+    data: {
+      mentorProfileId,
+      subjectId: data.subjectId,
+      title: data.title,
+      description: data.description,
+      difficultyLevel: data.difficultyLevel,
+      mode: data.mode,
+      meetingLink: data.meetingLink,
+      timeSlots: { create: data.timeSlots },
+    },
+    include: { timeSlots: true },
+  });
+
+  await tx.courseSession.createMany({
+    data: created.timeSlots.map((slot) => ({
+      courseId: created.id,
+      courseTimeSlotId: slot.id,
+      scheduledAt: nextOccurrence(slot.dayOfWeek, slot.startTime),
+    })),
+  });
+
+  return created;
+}
 
 async function createCourse(mentorProfileId, data) {
   const mentorProfile = await prisma.mentorProfile.findUnique({
@@ -32,32 +61,137 @@ async function createCourse(mentorProfileId, data) {
     throw new HttpError(400, "You can only create a course in a subject you teach");
   }
 
-  const course = await prisma.$transaction(async (tx) => {
-    const created = await tx.course.create({
-      data: {
-        mentorProfileId,
-        subjectId: subject.id,
-        title: data.title,
-        description: data.description,
-        difficultyLevel: data.difficultyLevel,
-        timeSlots: { create: data.timeSlots },
-      },
-      include: { timeSlots: true },
-    });
-
-    // Seed the first upcoming occurrence for each weekly time slot.
-    await tx.courseSession.createMany({
-      data: created.timeSlots.map((slot) => ({
-        courseId: created.id,
-        courseTimeSlotId: slot.id,
-        scheduledAt: nextOccurrence(slot.dayOfWeek, slot.startTime),
-      })),
-    });
-
-    return created;
-  });
+  const course = await prisma.$transaction((tx) =>
+    createCourseAndSeedSessions(tx, mentorProfileId, {
+      subjectId: subject.id,
+      title: data.title,
+      description: data.description,
+      difficultyLevel: data.difficultyLevel,
+      mode: data.mode,
+      timeSlots: data.timeSlots,
+    })
+  );
 
   return prisma.course.findUnique({ where: { id: course.id }, include: COURSE_DETAIL_INCLUDE });
+}
+
+// A structured course locks the moment its first session (of any time slot)
+// starts — the course is one body of content, so once any of it has been
+// taught, nobody new should join. Derived on demand rather than a stored flag
+// to avoid drift.
+async function isCourseLocked(courseId) {
+  const startedCount = await prisma.courseSession.count({ where: { courseId, startedAt: { not: null } } });
+  return startedCount > 0;
+}
+
+async function cloneCourse(courseId, userId) {
+  const source = await prisma.course.findUnique({
+    where: { id: courseId },
+    include: { timeSlots: true, mentorProfile: true },
+  });
+  if (!source || source.mentorProfile.userId !== userId) {
+    throw new HttpError(404, "Course not found");
+  }
+
+  const cloned = await prisma.$transaction((tx) =>
+    createCourseAndSeedSessions(tx, source.mentorProfileId, {
+      subjectId: source.subjectId,
+      title: source.title,
+      description: source.description,
+      difficultyLevel: source.difficultyLevel,
+      mode: source.mode,
+      meetingLink: source.meetingLink,
+      timeSlots: source.timeSlots.map((slot) => ({
+        dayOfWeek: slot.dayOfWeek,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+      })),
+    })
+  );
+
+  return prisma.course.findUnique({ where: { id: cloned.id }, include: COURSE_DETAIL_INCLUDE });
+}
+
+async function endCourse(courseId, userId) {
+  const course = await prisma.course.findUnique({
+    where: { id: courseId },
+    include: { mentorProfile: true, enrollments: { include: { studentProfile: true } } },
+  });
+  if (!course || course.mentorProfile.userId !== userId) {
+    throw new HttpError(404, "Course not found");
+  }
+  if (course.status !== "ACTIVE") {
+    throw new HttpError(409, "This course has already ended");
+  }
+
+  await prisma.$transaction([
+    prisma.courseSession.updateMany({ where: { courseId, status: "SCHEDULED" }, data: { status: "CANCELLED" } }),
+    prisma.course.update({ where: { id: courseId }, data: { status: "ARCHIVED" } }),
+  ]);
+
+  await Promise.all(
+    course.enrollments.map((e) =>
+      notify(
+        e.studentProfile.userId,
+        "COURSE_ENDED",
+        `The course "${course.title}" has ended — rate your experience!`,
+        `/courses/${courseId}`
+      )
+    )
+  );
+
+  return getCourseDetail(courseId, userId);
+}
+
+async function addCourseRating(courseId, userId, data) {
+  const [studentProfile, course] = await Promise.all([
+    prisma.studentProfile.findUnique({ where: { userId }, include: { user: true } }),
+    prisma.course.findUnique({ where: { id: courseId }, include: { mentorProfile: true } }),
+  ]);
+  if (!studentProfile) {
+    throw new HttpError(403, "Only students can rate a course");
+  }
+  if (!course) {
+    throw new HttpError(404, "Course not found");
+  }
+  if (course.status !== "ARCHIVED") {
+    throw new HttpError(409, "You can only rate a course after it has ended");
+  }
+
+  const enrollment = await prisma.courseEnrollment.findUnique({
+    where: { courseId_studentProfileId: { courseId, studentProfileId: studentProfile.id } },
+  });
+  if (!enrollment) {
+    throw new HttpError(403, "You were never enrolled in this course");
+  }
+
+  let rating;
+  try {
+    rating = await prisma.rating.create({
+      data: {
+        courseId,
+        raterId: userId,
+        rateeId: course.mentorProfile.userId,
+        score: data.score,
+        comment: data.comment,
+      },
+    });
+  } catch (err) {
+    if (err.code === "P2002") {
+      throw new HttpError(409, "You've already rated this course");
+    }
+    throw err;
+  }
+
+  await safelyCheckBadges(course.mentorProfileId, course.mentorProfile.userId);
+  await notify(
+    course.mentorProfile.userId,
+    "RATING_RECEIVED",
+    `${studentProfile.user.name} left you a rating for "${course.title}".`,
+    `/courses/${courseId}`
+  );
+
+  return rating;
 }
 
 async function listMyCourses(mentorProfileId) {
@@ -91,7 +225,8 @@ async function getCourseDetail(courseId, userId) {
   const { course, isMentor, isEnrolled } = await loadCourseAccess(courseId, userId);
   const members = course.enrollments.map((e) => ({ name: e.studentProfile.user.name, isActive: e.studentProfile.user.isActive }));
   const { enrollments, ...courseWithoutEnrollments } = course;
-  return { ...courseWithoutEnrollments, isMentor, isEnrolled, members };
+  const isLocked = course.mode === "STRUCTURED" && (await isCourseLocked(courseId));
+  return { ...courseWithoutEnrollments, isMentor, isEnrolled, members, isLocked };
 }
 
 async function joinCourse(courseId, userId) {
@@ -103,6 +238,9 @@ async function joinCourse(courseId, userId) {
   const course = await prisma.course.findUnique({ where: { id: courseId } });
   if (!course || course.status !== "ACTIVE") {
     throw new HttpError(404, "Course not found");
+  }
+  if (course.mode === "STRUCTURED" && (await isCourseLocked(courseId))) {
+    throw new HttpError(409, "Enrollment is closed — this course has already started");
   }
 
   await prisma.courseEnrollment.upsert({
@@ -134,11 +272,19 @@ async function leaveCourse(courseId, userId) {
 }
 
 async function setCourseMeetingLink(courseId, userId, meetingLink) {
-  const { isMentor } = await loadCourseAccess(courseId, userId);
+  const { course, isMentor } = await loadCourseAccess(courseId, userId);
   if (!isMentor) {
     throw new HttpError(403, "Only the mentor can set up the meeting link");
   }
-  return prisma.course.update({ where: { id: courseId }, data: { meetingLink }, include: COURSE_DETAIL_INCLUDE });
+  if (course.status !== "ACTIVE") {
+    throw new HttpError(409, "This course has ended");
+  }
+  await prisma.course.update({ where: { id: courseId }, data: { meetingLink } });
+  // Return through getCourseDetail rather than the raw update result so the
+  // response still carries isMentor/isEnrolled/isLocked/members — the frontend
+  // room page gates its whole view on those, and a partial course object made
+  // it look like the mentor had never joined their own course.
+  return getCourseDetail(courseId, userId);
 }
 
 async function listCourseMessages(courseId, userId) {
@@ -205,6 +351,9 @@ async function getCourseSessionDetail(courseSessionId, userId) {
 
 async function startCourseSession(courseSessionId, userId) {
   const courseSession = await loadCourseSessionForMentor(courseSessionId, userId);
+  if (courseSession.course.status !== "ACTIVE") {
+    throw new HttpError(409, "This course has ended");
+  }
   if (courseSession.status !== "SCHEDULED") {
     throw new HttpError(409, "Session is not in a startable state");
   }
@@ -228,6 +377,9 @@ async function setCourseSessionNotes(courseSessionId, userId, mentorNotes) {
 
 async function completeCourseSession(courseSessionId, userId, outcome) {
   const courseSession = await loadCourseSessionForMentor(courseSessionId, userId);
+  if (courseSession.course.status !== "ACTIVE") {
+    throw new HttpError(409, "This course has ended");
+  }
   if (courseSession.status !== "SCHEDULED") {
     throw new HttpError(409, "Session has already been closed out");
   }
@@ -287,4 +439,7 @@ module.exports = {
   startCourseSession,
   setCourseSessionNotes,
   completeCourseSession,
+  cloneCourse,
+  endCourse,
+  addCourseRating,
 };

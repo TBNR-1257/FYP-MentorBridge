@@ -145,6 +145,28 @@ export function completeCourseSession(token, id, outcome) {
   });
 }
 
+export function endCourse(token, id) {
+  return apiFetch(`/courses/${id}/end`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export function cloneCourse(token, id) {
+  return apiFetch(`/courses/${id}/clone`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export function rateCourse(token, id, payload) {
+  return apiFetch(`/courses/${id}/rating`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+}
+
 export function updateMentorProfile(token, payload) {
   return apiFetch("/mentors/profile", {
     method: "PATCH",

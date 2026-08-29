@@ -23,5 +23,8 @@ router.post("/:id/leave", asyncHandler(controller.leave));
 router.patch("/:id/meeting-link", asyncHandler(controller.meetingLink));
 router.get("/:id/resources", asyncHandler(controller.listResources));
 router.post("/:id/resources", asyncHandler(controller.addResource));
+router.post("/:id/end", asyncHandler(controller.end));
+router.post("/:id/clone", asyncHandler(controller.clone));
+router.post("/:id/rating", asyncHandler(controller.rate));
 
 module.exports = router;

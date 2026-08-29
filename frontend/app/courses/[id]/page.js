@@ -2,16 +2,30 @@
 
 import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { connectSocket } from "@/lib/socket";
 import ResourceList from "@/components/ResourceList";
 import * as api from "@/lib/api";
 
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const RATING_LEVELS = [1, 2, 3, 4, 5];
+
+// Upcoming (SCHEDULED) sessions first, soonest at the top; closed-out sessions
+// (completed/cancelled/no-show) pushed below those, oldest to newest.
+function sortCourseSessions(list) {
+  return [...list].sort((a, b) => {
+    const aOpen = a.status === "SCHEDULED";
+    const bOpen = b.status === "SCHEDULED";
+    if (aOpen !== bOpen) return aOpen ? -1 : 1;
+    return new Date(a.scheduledAt) - new Date(b.scheduledAt);
+  });
+}
 
 export default function CourseRoomPage({ params }) {
   const { id } = use(params);
   const { user, token, loading } = useAuth();
+  const router = useRouter();
 
   const [course, setCourse] = useState(null);
   const [sessions, setSessions] = useState([]);
@@ -24,6 +38,12 @@ export default function CourseRoomPage({ params }) {
   const [savingMeetingLink, setSavingMeetingLink] = useState(false);
   const [actioningSessionId, setActioningSessionId] = useState(null);
   const [resources, setResources] = useState([]);
+  const [endingConfirm, setEndingConfirm] = useState(false);
+  const [ending, setEnding] = useState(false);
+  const [cloning, setCloning] = useState(false);
+  const [ratingScore, setRatingScore] = useState(null);
+  const [ratingComment, setRatingComment] = useState("");
+  const [submittingRating, setSubmittingRating] = useState(false);
 
   const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -43,7 +63,7 @@ export default function CourseRoomPage({ params }) {
           api.listCourseResources(token, id),
         ]);
         setMessages(messages);
-        setSessions(allSessions.filter((s) => s.courseId === id));
+        setSessions(sortCourseSessions(allSessions.filter((s) => s.courseId === id)));
         setResources(resources);
       }
     } catch (err) {
@@ -124,6 +144,47 @@ export default function CourseRoomPage({ params }) {
     setResources((prev) => [resource, ...prev]);
   }
 
+  async function handleEndCourse() {
+    setEnding(true);
+    setError(null);
+    try {
+      const { course: updated } = await api.endCourse(token, id);
+      setCourse(updated);
+      setEndingConfirm(false);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setEnding(false);
+    }
+  }
+
+  async function handleClone() {
+    setCloning(true);
+    setError(null);
+    try {
+      const { course: cloned } = await api.cloneCourse(token, id);
+      router.push(`/courses/${cloned.id}`);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setCloning(false);
+    }
+  }
+
+  async function submitRating(e) {
+    e.preventDefault();
+    setSubmittingRating(true);
+    setError(null);
+    try {
+      const { rating } = await api.rateCourse(token, id, { score: ratingScore, comment: ratingComment.trim() || undefined });
+      setCourse((prev) => ({ ...prev, ratings: [...prev.ratings, rating] }));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSubmittingRating(false);
+    }
+  }
+
   async function handleSessionAction(sessionId, action, extra) {
     setActioningSessionId(sessionId);
     setError(null);
@@ -141,6 +202,8 @@ export default function CourseRoomPage({ params }) {
   if (loading || !course) return null;
 
   const isMentor = course.isMentor;
+  const isArchived = course.status === "ARCHIVED";
+  const myCourseRating = course.ratings.find((r) => r.raterId === user.id);
 
   return (
     <main className="flex flex-1 flex-col items-center px-6 py-8">
@@ -152,7 +215,12 @@ export default function CourseRoomPage({ params }) {
           >
             &larr; Back
           </Link>
-          <h1 className="mt-2 text-2xl font-semibold">{course.title}</h1>
+          <h1 className="mt-2 text-2xl font-semibold">
+            {course.title}{" "}
+            <span className="align-middle text-xs font-normal text-stone-500">
+              {course.mode} · {course.status}
+            </span>
+          </h1>
           <p className="text-stone-600">
             {course.subject.name} · {course.difficultyLevel} · Taught by {course.mentorProfile.user.name} ·{" "}
             {course._count.enrollments} enrolled
@@ -167,6 +235,47 @@ export default function CourseRoomPage({ params }) {
           )}
         </div>
 
+        {isMentor && (
+          <div className="flex items-center gap-2">
+            {!isArchived &&
+              (endingConfirm ? (
+                <>
+                  <span className="text-xs text-stone-600">
+                    End this course? Upcoming sessions will be cancelled and students notified.
+                  </span>
+                  <button
+                    onClick={handleEndCourse}
+                    disabled={ending}
+                    className="rounded-lg bg-red-600 px-3 py-1.5 text-xs text-white hover:bg-red-700 disabled:opacity-50"
+                  >
+                    {ending ? "Ending…" : "Confirm end course"}
+                  </button>
+                  <button
+                    onClick={() => setEndingConfirm(false)}
+                    type="button"
+                    className="text-xs text-stone-500 hover:underline"
+                  >
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => setEndingConfirm(true)}
+                  className="rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-xs hover:bg-stone-50"
+                >
+                  End course
+                </button>
+              ))}
+            <button
+              onClick={handleClone}
+              disabled={cloning}
+              className="rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-xs hover:bg-stone-50 disabled:opacity-50"
+            >
+              {cloning ? "Cloning…" : "Clone this course"}
+            </button>
+          </div>
+        )}
+
         {error && <p className="text-sm text-red-600">{error}</p>}
 
         {!isMentor && canAccessRoom && !course.mentorProfile.user.isActive && (
@@ -176,13 +285,19 @@ export default function CourseRoomPage({ params }) {
         )}
 
         {!canAccessRoom ? (
-          <button
-            onClick={handleJoin}
-            disabled={joining}
-            className="self-start rounded-lg bg-teal-600 px-4 py-2 text-white hover:bg-teal-700 disabled:opacity-50"
-          >
-            {joining ? "Joining…" : "Join this course"}
-          </button>
+          course.isLocked ? (
+            <p className="self-start rounded-lg bg-stone-100 px-4 py-2 text-sm text-stone-700">
+              Enrollment is closed — this course has already started.
+            </p>
+          ) : (
+            <button
+              onClick={handleJoin}
+              disabled={joining}
+              className="self-start rounded-lg bg-teal-600 px-4 py-2 text-white hover:bg-teal-700 disabled:opacity-50"
+            >
+              {joining ? "Joining…" : "Join this course"}
+            </button>
+          )
         ) : (
           <>
             <section className="rounded-lg border border-stone-200 bg-white p-4 text-sm">
@@ -190,13 +305,15 @@ export default function CourseRoomPage({ params }) {
 
               {isMentor && (
                 <div className="flex flex-col gap-3">
-                  <button
-                    onClick={openGoogleCalendarSetup}
-                    type="button"
-                    className="self-start rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-sm hover:bg-stone-50"
-                  >
-                    Set up a Google Meet
-                  </button>
+                  {!isArchived && (
+                    <button
+                      onClick={openGoogleCalendarSetup}
+                      type="button"
+                      className="self-start rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-sm hover:bg-stone-50"
+                    >
+                      Set up a Google Meet
+                    </button>
+                  )}
 
                   {course.meetingLink && !editingMeetingLink ? (
                     <div className="flex items-center gap-3">
@@ -208,14 +325,18 @@ export default function CourseRoomPage({ params }) {
                       >
                         Open Google Meet
                       </a>
-                      <button
-                        onClick={() => setEditingMeetingLink(true)}
-                        type="button"
-                        className="text-xs text-stone-500 hover:underline"
-                      >
-                        Update link
-                      </button>
+                      {!isArchived && (
+                        <button
+                          onClick={() => setEditingMeetingLink(true)}
+                          type="button"
+                          className="text-xs text-stone-500 hover:underline"
+                        >
+                          Update link
+                        </button>
+                      )}
                     </div>
+                  ) : isArchived ? (
+                    <p className="text-stone-500">This course has ended.</p>
                   ) : (
                     <div className="flex gap-2">
                       <input
@@ -267,17 +388,23 @@ export default function CourseRoomPage({ params }) {
                 ))}
                 <div ref={messagesEndRef} />
               </div>
-              <form onSubmit={sendMessage} className="flex gap-2 border-t border-stone-200 bg-white p-2">
-                <input
-                  value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
-                  placeholder="Message the class…"
-                  className="flex-1 rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-sm"
-                />
-                <button type="submit" className="rounded-lg bg-teal-600 px-3 py-1.5 text-sm text-white hover:bg-teal-700">
-                  Send
-                </button>
-              </form>
+              {isArchived ? (
+                <p className="border-t border-stone-200 bg-white p-3 text-xs text-stone-500">
+                  This course has ended — the chat is now read-only.
+                </p>
+              ) : (
+                <form onSubmit={sendMessage} className="flex gap-2 border-t border-stone-200 bg-white p-2">
+                  <input
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    placeholder="Message the class…"
+                    className="flex-1 rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-sm"
+                  />
+                  <button type="submit" className="rounded-lg bg-teal-600 px-3 py-1.5 text-sm text-white hover:bg-teal-700">
+                    Send
+                  </button>
+                </form>
+              )}
             </div>
 
             <section className="rounded-lg border border-stone-200 bg-white p-4 text-sm">
@@ -292,7 +419,7 @@ export default function CourseRoomPage({ params }) {
                         <span>
                           {new Date(s.scheduledAt).toLocaleString()} · <span className="text-stone-500">{s.status}</span>
                         </span>
-                        {isMentor && s.status === "SCHEDULED" && (
+                        {isMentor && !isArchived && s.status === "SCHEDULED" && (
                           <div className="flex gap-2">
                             {!s.startedAt && (
                               <button
@@ -326,7 +453,51 @@ export default function CourseRoomPage({ params }) {
               )}
             </section>
 
-            <ResourceList resources={resources} canAdd={isMentor} onAdd={handleAddResource} />
+            <ResourceList resources={resources} canAdd={isMentor && !isArchived} onAdd={handleAddResource} />
+
+            {!isMentor && isArchived && (
+              <section className="rounded-lg border border-stone-200 bg-white p-4 text-sm">
+                <h2 className="mb-2 font-medium">Rate this course</h2>
+
+                {myCourseRating ? (
+                  <div>
+                    <p>Your rating: {myCourseRating.score} / 5</p>
+                    {myCourseRating.comment && <p className="text-stone-600">&quot;{myCourseRating.comment}&quot;</p>}
+                  </div>
+                ) : (
+                  <form onSubmit={submitRating} className="flex flex-col gap-3">
+                    <div className="flex gap-1">
+                      {RATING_LEVELS.map((level) => (
+                        <button
+                          key={level}
+                          type="button"
+                          onClick={() => setRatingScore(level)}
+                          className={`h-8 w-8 rounded-lg border text-sm ${
+                            ratingScore === level ? "bg-teal-600 text-white" : "border-stone-300 bg-white hover:bg-stone-50"
+                          }`}
+                        >
+                          {level}
+                        </button>
+                      ))}
+                    </div>
+                    <textarea
+                      rows={2}
+                      placeholder="Optional comment"
+                      value={ratingComment}
+                      onChange={(e) => setRatingComment(e.target.value)}
+                      className="rounded-lg border border-stone-300 bg-white px-3 py-2"
+                    />
+                    <button
+                      type="submit"
+                      disabled={submittingRating || !ratingScore}
+                      className="self-start rounded-lg bg-teal-600 px-3 py-1.5 text-white hover:bg-teal-700 disabled:opacity-50"
+                    >
+                      {submittingRating ? "Submitting…" : "Submit rating"}
+                    </button>
+                  </form>
+                )}
+              </section>
+            )}
 
             {course.members.length > 0 && (
               <section className="rounded-lg border border-stone-200 bg-white p-4 text-sm">

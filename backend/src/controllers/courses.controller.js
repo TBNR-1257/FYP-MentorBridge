@@ -7,6 +7,7 @@ const {
   setCourseMeetingLinkSchema,
   setCourseSessionNotesSchema,
   completeCourseSessionSchema,
+  courseRatingSchema,
 } = require("../schemas/course.schema");
 const { createResourceSchema } = require("../schemas/resource.schema");
 
@@ -110,6 +111,25 @@ async function addResource(req, res) {
   res.status(201).json({ resource });
 }
 
+async function end(req, res) {
+  const course = await service.endCourse(req.params.id, req.user.id);
+  res.json({ course });
+}
+
+async function clone(req, res) {
+  const course = await service.cloneCourse(req.params.id, req.user.id);
+  res.status(201).json({ course });
+}
+
+async function rate(req, res) {
+  const parsed = courseRatingSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.issues.map((i) => i.message).join(", ") });
+  }
+  const rating = await service.addCourseRating(req.params.id, req.user.id, parsed.data);
+  res.status(201).json({ rating });
+}
+
 module.exports = {
   create,
   listMine,
@@ -125,4 +145,7 @@ module.exports = {
   completeSession,
   listResources,
   addResource,
+  end,
+  clone,
+  rate,
 };

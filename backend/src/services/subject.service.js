@@ -133,6 +133,10 @@ async function listActiveCoursesForSubject(subjectId, search) {
       subjectId,
       status: "ACTIVE",
       mentorProfile: { user: { isActive: true } },
+      // A locked structured course (enrollment closed once its first session
+      // has started) is excluded entirely rather than shown with a disabled
+      // Join button.
+      OR: [{ mode: "OPEN" }, { mode: "STRUCTURED", sessions: { none: { startedAt: { not: null } } } }],
       ...(search ? { title: { contains: search, mode: "insensitive" } } : {}),
     },
     include: {

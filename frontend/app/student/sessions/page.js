@@ -28,13 +28,29 @@ export default function StudentSessionsPage() {
           subtitle: s.helpRequest.subject.name,
           status: s.status,
         }));
-        const course = courseSessions.map((cs) => ({
-          id: cs.id,
-          href: `/courses/${cs.courseId}`,
-          title: cs.course.title,
-          subtitle: `${cs.course.subject.name} · course`,
-          status: cs.status,
-        }));
+        // A course recurs weekly, so it can have many CourseSession rows over
+        // its lifetime — collapse them to one row per course rather than one
+        // per week. "Open" vs "Completed" tracks the course itself (has the
+        // mentor ended it?), not any single week's occurrence.
+        const courseGroups = new Map();
+        courseSessions.forEach((cs) => {
+          if (!courseGroups.has(cs.courseId)) courseGroups.set(cs.courseId, { course: cs.course, occurrences: [] });
+          courseGroups.get(cs.courseId).occurrences.push(cs);
+        });
+        const course = Array.from(courseGroups.values()).map(({ course, occurrences }) => {
+          const nextClass = occurrences
+            .filter((o) => o.status === "SCHEDULED")
+            .sort((a, b) => new Date(a.scheduledAt) - new Date(b.scheduledAt))[0];
+          return {
+            id: course.id,
+            href: `/courses/${course.id}`,
+            title: course.title,
+            subtitle:
+              `${course.subject.name} · course · ` +
+              (nextClass ? `next class ${new Date(nextClass.scheduledAt).toLocaleDateString()}` : "ended"),
+            status: course.status === "ARCHIVED" ? "COMPLETED" : "SCHEDULED",
+          };
+        });
         setItems([...oneOnOne, ...course]);
       })
       .finally(() => setFetching(false));

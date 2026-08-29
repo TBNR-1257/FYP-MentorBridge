@@ -48,9 +48,15 @@ export default function MentorCoursesPage() {
                   className="block rounded-lg border border-stone-200 bg-white p-3 text-sm hover:bg-stone-50"
                 >
                   <span className="font-medium">{course.title}</span> · {course.subject.name} ·{" "}
-                  <span className="text-stone-500">
-                    {course._count.enrollments} enrolled · {course.status}
-                  </span>
+                  <span className="text-stone-500">{course._count.enrollments} enrolled</span>{" "}
+                  <span
+                    className={`rounded px-1.5 py-0.5 text-xs ${
+                      course.status === "ARCHIVED" ? "bg-stone-200 text-stone-600" : "bg-teal-100 text-teal-800"
+                    }`}
+                  >
+                    {course.status}
+                  </span>{" "}
+                  <span className="rounded bg-stone-100 px-1.5 py-0.5 text-xs text-stone-600">{course.mode}</span>
                 </Link>
               </li>
             ))}

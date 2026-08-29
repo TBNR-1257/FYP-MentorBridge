@@ -28,6 +28,11 @@ enum CourseStatus {
   ARCHIVED
 }
 
+enum CourseMode {
+  STRUCTURED
+  OPEN
+}
+
 enum SubjectRequestStatus {
   PENDING
   APPROVED
@@ -309,6 +314,7 @@ model Course {
   description     String
   difficultyLevel DifficultyLevel
   status          CourseStatus @default(ACTIVE)
+  mode            CourseMode   @default(OPEN)
 
   // Set by the mentor once created — same manual Google Meet handoff pattern as
   // a 1:1 session, reused across every weekly occurrence of this course.
@@ -319,6 +325,7 @@ model Course {
   sessions    CourseSession[]
   messages    CourseChatMessage[]
   resources   Resource[]
+  ratings     Rating[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -428,10 +435,17 @@ model Resource {
 
 // Covers both directions: student rating a mentor after a session,
 // and a mentor rating a student (including no-show / misconduct flags).
+// A course rating instead sets courseId — student -> mentor only, no
+// no-show/misconduct flags (a course has no single attendance event to flag).
+// Exactly one of sessionId/courseId is set (enforced in the service layer);
+// Postgres treats each row's NULL as distinct, so the two partial-unique
+// constraints below coexist without conflict.
 model Rating {
-  id        String  @id @default(uuid())
-  sessionId String
-  session   Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  id        String   @id @default(uuid())
+  sessionId String?
+  session   Session? @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  courseId  String?
+  course    Course?  @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   raterId String
   rater   User   @relation("RatingRater", fields: [raterId], references: [id])
@@ -446,6 +460,7 @@ model Rating {
   createdAt DateTime @default(now())
 
   @@unique([sessionId, raterId])
+  @@unique([courseId, raterId])
 }
 
 // =========================================================

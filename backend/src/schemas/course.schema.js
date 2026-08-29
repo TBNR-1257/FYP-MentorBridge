@@ -6,7 +6,13 @@ const createCourseSchema = z.object({
   title: z.string().min(1),
   description: z.string().min(1),
   difficultyLevel: z.enum(DIFFICULTY_LEVELS),
+  mode: z.enum(["STRUCTURED", "OPEN"]).default("OPEN"),
   timeSlots: z.array(availabilitySlotSchema).min(1),
+});
+
+const courseRatingSchema = z.object({
+  score: z.number().int().min(1).max(5),
+  comment: z.string().optional(),
 });
 
 const setCourseMeetingLinkSchema = z.object({
@@ -26,4 +32,5 @@ module.exports = {
   setCourseMeetingLinkSchema,
   setCourseSessionNotesSchema,
   completeCourseSessionSchema,
+  courseRatingSchema,
 };

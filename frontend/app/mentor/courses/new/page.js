@@ -18,6 +18,7 @@ export default function NewCoursePage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [difficultyLevel, setDifficultyLevel] = useState(DIFFICULTY_LEVELS[1]);
+  const [mode, setMode] = useState("OPEN");
   const [timeSlots, setTimeSlots] = useState([emptySlot()]);
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -34,6 +35,7 @@ export default function NewCoursePage() {
         title,
         description,
         difficultyLevel,
+        mode,
         timeSlots,
       });
       router.push(`/courses/${course.id}`);
@@ -49,6 +51,30 @@ export default function NewCoursePage() {
       <h1 className="text-2xl font-semibold">Create a course</h1>
 
       <form onSubmit={handleSubmit} className="flex w-full max-w-md flex-col gap-4">
+        <Field label="Course type">
+          <div className="flex rounded-lg border border-stone-300 bg-white p-1 text-sm">
+            <button
+              type="button"
+              onClick={() => setMode("OPEN")}
+              className={`flex-1 rounded px-4 py-1.5 ${mode === "OPEN" ? "bg-teal-600 text-white" : ""}`}
+            >
+              Open drop-in
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode("STRUCTURED")}
+              className={`flex-1 rounded px-4 py-1.5 ${mode === "STRUCTURED" ? "bg-teal-600 text-white" : ""}`}
+            >
+              Structured
+            </button>
+          </div>
+          <p className="mt-1 text-xs text-stone-500">
+            {mode === "OPEN"
+              ? "Runs indefinitely with rolling membership, like today — students can join any time."
+              : "Enrollment locks once the first class starts, and you can end the course to close it out and collect ratings."}
+          </p>
+        </Field>
+
         <Field label="Subject">
           <SubjectCombobox
             id="course-subject"
