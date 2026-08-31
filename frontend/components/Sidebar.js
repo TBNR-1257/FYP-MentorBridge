@@ -23,6 +23,7 @@ const LINKS_BY_ROLE = {
   ],
   ADMIN: (role) => [
     { href: dashboardPathForRole(role), label: "Dashboard" },
+    { href: "/admin/approvals", label: "Approvals" },
     { href: "/admin/users", label: "All Users" },
     { href: "/admin/monitoring", label: "Monitoring" },
   ],

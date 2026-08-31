@@ -35,7 +35,7 @@ export default function ResourceList({ resources, canAdd, onAdd }) {
       {resources.length === 0 ? (
         <p className="text-stone-500">No resources shared yet.</p>
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul className="flex max-h-72 flex-col gap-2 overflow-y-auto">
           {resources.map((r) => (
             <li key={r.id} className="rounded-lg border border-stone-100 p-2">
               <a href={r.url} target="_blank" rel="noreferrer" className="font-medium text-teal-700 hover:underline">

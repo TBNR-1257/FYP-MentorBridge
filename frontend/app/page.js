@@ -1,4 +1,9 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useAuth, dashboardPathForRole } from "@/lib/auth-context";
 
 const STEPS = [
   {
@@ -36,6 +41,13 @@ const FEATURES = [
 ];
 
 export default function Home() {
+  const { user } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (user) router.replace(dashboardPathForRole(user.role));
+  }, [user, router]);
+
   return (
     <main className="flex flex-1 flex-col">
       <section className="flex flex-col items-center gap-6 px-6 py-20 text-center">

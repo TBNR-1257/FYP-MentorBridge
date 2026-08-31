@@ -207,7 +207,7 @@ export default function CourseRoomPage({ params }) {
 
   return (
     <main className="flex flex-1 flex-col items-center px-6 py-8">
-      <div className="flex w-full max-w-3xl flex-col gap-4">
+      <div className="flex w-full max-w-6xl flex-col gap-4">
         <div>
           <Link
             href={isMentor ? "/mentor/courses" : "/student/dashboard"}
@@ -300,6 +300,8 @@ export default function CourseRoomPage({ params }) {
           )
         ) : (
           <>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="flex min-w-0 flex-col gap-4">
             <section className="rounded-lg border border-stone-200 bg-white p-4 text-sm">
               <h2 className="mb-2 font-medium">Video call</h2>
 
@@ -372,7 +374,7 @@ export default function CourseRoomPage({ params }) {
                 ))}
             </section>
 
-            <div className="flex h-80 flex-col rounded-lg border border-stone-200 bg-white">
+            <div className="flex min-h-80 flex-1 flex-col rounded-lg border border-stone-200 bg-white">
               <div className="flex-1 overflow-y-auto p-3">
                 {messages.map((m) => (
                   <div key={m.id} className={`mb-2 flex ${m.senderId === user.id ? "justify-end" : "justify-start"}`}>
@@ -406,54 +408,55 @@ export default function CourseRoomPage({ params }) {
                 </form>
               )}
             </div>
+          </div>
+
+          <div className="flex flex-col gap-4 lg:sticky lg:top-6">
+            <ResourceList resources={resources} canAdd={isMentor && !isArchived} onAdd={handleAddResource} />
 
             <section className="rounded-lg border border-stone-200 bg-white p-4 text-sm">
               <h2 className="mb-2 font-medium">Class sessions</h2>
               {sessions.length === 0 ? (
                 <p className="text-stone-500">No sessions yet.</p>
               ) : (
-                <ul className="flex flex-col gap-2">
+                <ul className="flex max-h-72 flex-col gap-2 overflow-y-auto">
                   {sessions.map((s) => (
                     <li key={s.id} className="rounded-lg border border-stone-100 p-2">
-                      <div className="flex items-center justify-between">
-                        <span>
-                          {new Date(s.scheduledAt).toLocaleString()} · <span className="text-stone-500">{s.status}</span>
-                        </span>
-                        {isMentor && !isArchived && s.status === "SCHEDULED" && (
-                          <div className="flex gap-2">
-                            {!s.startedAt && (
-                              <button
-                                onClick={() => handleSessionAction(s.id, "start")}
-                                disabled={actioningSessionId === s.id}
-                                className="rounded-lg border border-stone-300 bg-white px-2 py-1 text-xs hover:bg-stone-50 disabled:opacity-50"
-                              >
-                                Start
-                              </button>
-                            )}
+                      <p>{new Date(s.scheduledAt).toLocaleString()}</p>
+                      <p className="text-stone-500">{s.status}</p>
+                      {isMentor && !isArchived && s.status === "SCHEDULED" && (
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {!s.startedAt && (
                             <button
-                              onClick={() => handleSessionAction(s.id, "complete", "COMPLETED")}
-                              disabled={actioningSessionId === s.id}
-                              className="rounded-lg bg-green-600 px-2 py-1 text-xs text-white hover:bg-green-700 disabled:opacity-50"
-                            >
-                              Complete
-                            </button>
-                            <button
-                              onClick={() => handleSessionAction(s.id, "complete", "NO_SHOW")}
+                              onClick={() => handleSessionAction(s.id, "start")}
                               disabled={actioningSessionId === s.id}
                               className="rounded-lg border border-stone-300 bg-white px-2 py-1 text-xs hover:bg-stone-50 disabled:opacity-50"
                             >
-                              No-show
+                              Start
                             </button>
-                          </div>
-                        )}
-                      </div>
+                          )}
+                          <button
+                            onClick={() => handleSessionAction(s.id, "complete", "COMPLETED")}
+                            disabled={actioningSessionId === s.id}
+                            className="rounded-lg bg-green-600 px-2 py-1 text-xs text-white hover:bg-green-700 disabled:opacity-50"
+                          >
+                            Complete
+                          </button>
+                          <button
+                            onClick={() => handleSessionAction(s.id, "complete", "NO_SHOW")}
+                            disabled={actioningSessionId === s.id}
+                            className="rounded-lg border border-stone-300 bg-white px-2 py-1 text-xs hover:bg-stone-50 disabled:opacity-50"
+                          >
+                            No-show
+                          </button>
+                        </div>
+                      )}
                     </li>
                   ))}
                 </ul>
               )}
             </section>
-
-            <ResourceList resources={resources} canAdd={isMentor && !isArchived} onAdd={handleAddResource} />
+          </div>
+          </div>
 
             {!isMentor && isArchived && (
               <section className="rounded-lg border border-stone-200 bg-white p-4 text-sm">

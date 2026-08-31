@@ -84,15 +84,26 @@ async function rejectSubjectRequest(req, res) {
 
 async function listUsers(req, res) {
   const { role, search } = req.query;
-  const users = await prisma.user.findMany({
-    where: {
-      ...(role ? { role } : {}),
-      ...(search ? { OR: [{ name: { contains: search, mode: "insensitive" } }, { email: { contains: search, mode: "insensitive" } }] } : {}),
-    },
-    select: { id: true, name: true, email: true, role: true, isActive: true, suspendedAt: true, suspendedReason: true, createdAt: true },
-    orderBy: { createdAt: "desc" },
-  });
-  res.json({ users });
+  const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+  const pageSize = Math.min(100, Math.max(1, parseInt(req.query.pageSize, 10) || 20));
+
+  const where = {
+    ...(role ? { role } : {}),
+    ...(search ? { OR: [{ name: { contains: search, mode: "insensitive" } }, { email: { contains: search, mode: "insensitive" } }] } : {}),
+  };
+
+  const [users, total] = await Promise.all([
+    prisma.user.findMany({
+      where,
+      select: { id: true, name: true, email: true, role: true, isActive: true, suspendedAt: true, suspendedReason: true, createdAt: true },
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    }),
+    prisma.user.count({ where }),
+  ]);
+
+  res.json({ users, total, page, pageSize });
 }
 
 async function suspendUser(req, res) {
@@ -139,6 +150,11 @@ async function listCourses(req, res) {
   res.json({ courses });
 }
 
+async function listFlaggedRatings(req, res) {
+  const ratings = await analyticsService.listFlaggedRatings();
+  res.json({ ratings });
+}
+
 module.exports = {
   listMentors,
   verifyMentor,
@@ -152,4 +168,5 @@ module.exports = {
   getAnalytics,
   listSessions,
   listCourses,
+  listFlaggedRatings,
 };

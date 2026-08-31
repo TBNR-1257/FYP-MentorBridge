@@ -2,15 +2,19 @@
 
 import { useEffect, useState } from "react";
 import { useRequireRole, useAuth } from "@/lib/auth-context";
+import Pagination from "@/components/Pagination";
 import * as api from "@/lib/api";
 
 const ROLES = ["", "STUDENT", "MENTOR", "ADMIN"];
+const PAGE_SIZE = 20;
 
 export default function AdminUsersPage() {
   const { loading } = useRequireRole("ADMIN");
   const { token } = useAuth();
 
   const [users, setUsers] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
   const [role, setRole] = useState("");
   const [search, setSearch] = useState("");
   const [fetching, setFetching] = useState(true);
@@ -19,11 +23,19 @@ export default function AdminUsersPage() {
   const [suspendingId, setSuspendingId] = useState(null);
   const [reasonDraft, setReasonDraft] = useState("");
 
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
   async function load() {
     setFetching(true);
     try {
-      const { users } = await api.listUsers(token, { role: role || undefined, search: search || undefined });
+      const { users, total } = await api.listUsers(token, {
+        role: role || undefined,
+        search: search || undefined,
+        page,
+        pageSize: PAGE_SIZE,
+      });
       setUsers(users);
+      setTotal(total);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -31,12 +43,18 @@ export default function AdminUsersPage() {
     }
   }
 
+  // Any filter change invalidates the current page's contents, so jump back
+  // to page 1 rather than risk landing past the end of a shorter result set.
+  useEffect(() => {
+    setPage(1);
+  }, [role, search]);
+
   useEffect(() => {
     if (loading || !token) return;
     const timeout = setTimeout(load, 250);
     return () => clearTimeout(timeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, token, role, search]);
+  }, [loading, token, role, search, page]);
 
   async function handleSuspend(id) {
     if (!reasonDraft.trim()) return;
@@ -95,6 +113,12 @@ export default function AdminUsersPage() {
         </div>
 
         {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+
+        {!fetching && total > 0 && (
+          <p className="mt-3 text-xs text-stone-500">
+            {total} user{total === 1 ? "" : "s"} found
+          </p>
+        )}
 
         {fetching ? (
           <p className="mt-6 text-sm text-stone-500">Loading…</p>
@@ -159,6 +183,8 @@ export default function AdminUsersPage() {
             ))}
           </ul>
         )}
+
+        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
       </div>
     </main>
   );

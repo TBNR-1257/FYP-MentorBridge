@@ -70,6 +70,21 @@ async function getPlatformAnalytics() {
   };
 }
 
+// Only 1:1 sessions carry these flags — a mentor rating a student is the only
+// direction that can set isNoShow/isMisconduct (course ratings are student ->
+// mentor only, score/comment).
+async function listFlaggedRatings() {
+  return prisma.rating.findMany({
+    where: { OR: [{ isNoShow: true }, { isMisconduct: true }] },
+    include: {
+      rater: { select: { id: true, name: true } },
+      ratee: { select: { id: true, name: true, isActive: true } },
+      session: { include: { helpRequest: { include: { subject: true } } } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
 async function listAllSessions() {
   return prisma.session.findMany({
     include: {
@@ -118,4 +133,4 @@ async function getMentorLeaderboard() {
     .slice(0, 10);
 }
 
-module.exports = { getPlatformAnalytics, listAllSessions, listAllCourses, getMentorLeaderboard };
+module.exports = { getPlatformAnalytics, listFlaggedRatings, listAllSessions, listAllCourses, getMentorLeaderboard };

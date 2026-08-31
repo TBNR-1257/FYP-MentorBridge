@@ -1,13 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRequireRole, useAuth } from "@/lib/auth-context";
+import FilterChips from "@/components/FilterChips";
+import Pagination from "@/components/Pagination";
 import * as api from "@/lib/api";
 
-const COLUMNS = [
-  { label: "Open", statuses: ["SCHEDULED"] },
-  { label: "Completed", statuses: ["COMPLETED", "NO_SHOW", "CANCELLED"] },
+const PAGE_SIZE = 10;
+
+const STATUS_FILTERS = [
+  { value: "ALL", label: "All" },
+  { value: "OPEN", label: "Open" },
+  { value: "COMPLETED", label: "Completed" },
+];
+
+const TYPE_FILTERS = [
+  { value: "ALL", label: "All" },
+  { value: "SESSION", label: "1:1" },
+  { value: "COURSE", label: "Courses" },
 ];
 
 export default function MentorSessionsPage() {
@@ -16,6 +27,10 @@ export default function MentorSessionsPage() {
 
   const [items, setItems] = useState([]);
   const [fetching, setFetching] = useState(true);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [typeFilter, setTypeFilter] = useState("ALL");
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     if (loading || !token) return;
@@ -24,6 +39,7 @@ export default function MentorSessionsPage() {
         const oneOnOne = sessions.map((s) => ({
           id: s.id,
           href: `/sessions/${s.id}`,
+          type: "SESSION",
           title: s.helpRequest.topic,
           subtitle: s.helpRequest.subject.name,
           status: s.status,
@@ -44,6 +60,7 @@ export default function MentorSessionsPage() {
           return {
             id: course.id,
             href: `/courses/${course.id}`,
+            type: "COURSE",
             title: course.title,
             subtitle:
               `${course.subject.name} · course · ` +
@@ -56,45 +73,78 @@ export default function MentorSessionsPage() {
       .finally(() => setFetching(false));
   }, [loading, token]);
 
+  const filteredItems = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return items.filter((item) => {
+      if (typeFilter !== "ALL" && item.type !== typeFilter) return false;
+      const bucket = item.status === "SCHEDULED" ? "OPEN" : "COMPLETED";
+      if (statusFilter !== "ALL" && bucket !== statusFilter) return false;
+      if (q && !item.title.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [items, search, statusFilter, typeFilter]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, statusFilter, typeFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / PAGE_SIZE));
+  const pagedItems = filteredItems.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
   if (loading) return null;
 
   return (
     <main className="flex flex-1 flex-col items-center gap-6 px-6 py-10">
-      <h1 className="text-2xl font-semibold">My Sessions</h1>
+      <div className="w-full max-w-2xl">
+        <h1 className="text-2xl font-semibold">My Sessions</h1>
 
-      {fetching ? (
-        <p className="text-sm text-stone-500">Loading…</p>
-      ) : items.length === 0 ? (
-        <p className="text-sm text-stone-500">No sessions yet.</p>
-      ) : (
-        <div className="grid w-full max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2">
-          {COLUMNS.map((column) => {
-            const columnItems = items.filter((i) => column.statuses.includes(i.status));
-            return (
-              <div key={column.label} className="flex flex-col gap-2">
-                <h2 className="text-sm font-medium text-stone-500">
-                  {column.label} ({columnItems.length})
-                </h2>
-                {columnItems.length === 0 ? (
-                  <p className="text-xs text-stone-400">Nothing here.</p>
-                ) : (
-                  columnItems.map((item) => (
-                    <Link
-                      key={item.id}
-                      href={item.href}
-                      className="block rounded-lg border border-stone-200 bg-white p-3 text-sm hover:bg-stone-50"
-                    >
-                      <span className="font-medium">{item.title}</span>
-                      <p className="text-stone-500">{item.subtitle}</p>
-                      <p className="text-xs text-stone-500">{item.status}</p>
-                    </Link>
-                  ))
-                )}
-              </div>
-            );
-          })}
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by title…"
+            className="flex-1 rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm"
+          />
+          <FilterChips value={statusFilter} onChange={setStatusFilter} options={STATUS_FILTERS} />
+          <FilterChips value={typeFilter} onChange={setTypeFilter} options={TYPE_FILTERS} />
         </div>
-      )}
+
+        <div className="mt-6 flex flex-col gap-2">
+          {fetching ? (
+            <p className="text-sm text-stone-500">Loading…</p>
+          ) : items.length === 0 ? (
+            <p className="text-sm text-stone-500">No sessions yet.</p>
+          ) : filteredItems.length === 0 ? (
+            <p className="text-sm text-stone-500">No sessions match your search/filters.</p>
+          ) : (
+            pagedItems.map((item) => <SessionRow key={item.type + item.id} item={item} />)
+          )}
+        </div>
+
+        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+      </div>
     </main>
+  );
+}
+
+function SessionRow({ item }) {
+  const isOpen = item.status === "SCHEDULED";
+  return (
+    <Link
+      href={item.href}
+      className="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white p-3 text-sm hover:bg-stone-50"
+    >
+      <div className="min-w-0">
+        <span className="font-medium">{item.title}</span>
+        <p className="truncate text-stone-500">{item.subtitle}</p>
+      </div>
+      <span
+        className={`shrink-0 rounded px-1.5 py-0.5 text-xs ${
+          isOpen ? "bg-teal-100 text-teal-800" : "bg-stone-200 text-stone-600"
+        }`}
+      >
+        {item.status}
+      </span>
+    </Link>
   );
 }

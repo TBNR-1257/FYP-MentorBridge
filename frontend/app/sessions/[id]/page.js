@@ -187,7 +187,7 @@ export default function SessionRoomPage({ params }) {
 
   return (
     <main className="flex flex-1 flex-col items-center px-6 py-8">
-      <div className="flex w-full max-w-3xl flex-col gap-4">
+      <div className="flex w-full max-w-6xl flex-col gap-4">
         <div>
           <Link
             href={isMentor ? "/mentor/dashboard" : "/student/dashboard"}
@@ -209,6 +209,8 @@ export default function SessionRoomPage({ params }) {
           </p>
         )}
 
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+        <div className="flex min-w-0 flex-col gap-4">
         <section className="rounded-lg border border-stone-200 bg-white p-4 text-sm">
           <h2 className="mb-2 font-medium">Video call</h2>
 
@@ -364,8 +366,6 @@ export default function SessionRoomPage({ params }) {
           </section>
         )}
 
-        <ResourceList resources={resources} canAdd={isMentor} onAdd={handleAddResource} />
-
         {canRate && (
           <section className="rounded-lg border border-stone-200 bg-white p-4 text-sm">
             <h2 className="mb-2 font-medium">{isMentor ? "Rate the student" : "Rate your mentor"}</h2>
@@ -431,6 +431,12 @@ export default function SessionRoomPage({ params }) {
             )}
           </section>
         )}
+        </div>
+
+        <div className="lg:sticky lg:top-6">
+          <ResourceList resources={resources} canAdd={isMentor} onAdd={handleAddResource} />
+        </div>
+        </div>
       </div>
     </main>
   );

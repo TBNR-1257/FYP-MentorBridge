@@ -19,5 +19,6 @@ router.patch("/users/:id/reactivate", asyncHandler(controller.reactivateUser));
 router.get("/analytics", asyncHandler(controller.getAnalytics));
 router.get("/sessions", asyncHandler(controller.listSessions));
 router.get("/courses", asyncHandler(controller.listCourses));
+router.get("/flagged-ratings", asyncHandler(controller.listFlaggedRatings));
 
 module.exports = router;

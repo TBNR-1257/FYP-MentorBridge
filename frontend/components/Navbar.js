@@ -44,7 +44,7 @@ export default function Navbar() {
             </svg>
           </button>
         )}
-        <Link href="/" className="font-semibold">
+        <Link href={user ? dashboardPathForRole(user.role) : "/"} className="font-semibold">
           MentorBridge
         </Link>
       </div>
