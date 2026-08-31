@@ -191,27 +191,27 @@ export default function SessionRoomPage({ params }) {
         <div>
           <Link
             href={isMentor ? "/mentor/dashboard" : "/student/dashboard"}
-            className="text-sm text-stone-500 hover:underline"
+            className="text-sm text-[#9fb8ae] hover:underline"
           >
             &larr; Back to dashboard
           </Link>
           <h1 className="mt-2 text-2xl font-semibold">{session.helpRequest.topic}</h1>
-          <p className="text-stone-600">
+          <p className="text-[#9fb8ae]">
             {session.helpRequest.subject.name} · Status: <span className="font-medium">{session.status}</span>
           </p>
         </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-red-400">{error}</p>}
 
         {!counterpart.isActive && (
-          <p className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-800">
+          <p className="rounded-lg bg-red-500/10 px-4 py-2 text-sm text-red-300">
             {counterpart.name}&apos;s account has been suspended — they may not respond.
           </p>
         )}
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
         <div className="flex min-w-0 flex-col gap-4">
-        <section className="rounded-lg border border-stone-200 bg-white p-4 text-sm">
+        <section className="rounded-lg border border-[#234339] bg-[#102420] p-4 text-sm">
           <h2 className="mb-2 font-medium">Video call</h2>
 
             {isMentor && (
@@ -219,11 +219,11 @@ export default function SessionRoomPage({ params }) {
                 <button
                   onClick={openGoogleCalendarSetup}
                   type="button"
-                  className="self-start rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-sm hover:bg-stone-50"
+                  className="self-start rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-1.5 text-sm hover:bg-[#17322b]"
                 >
                   Set up a Google Meet
                 </button>
-                <p className="text-xs text-stone-500">
+                <p className="text-xs text-[#9fb8ae]">
                   This opens Google Calendar so you can agree on a time and add Meet video conferencing yourself —
                   paste the resulting link below once it&apos;s ready.
                 </p>
@@ -234,14 +234,14 @@ export default function SessionRoomPage({ params }) {
                       href={session.meetingLink}
                       target="_blank"
                       rel="noreferrer"
-                      className="rounded-lg bg-teal-600 px-3 py-1.5 text-white hover:bg-teal-700"
+                      className="rounded-lg bg-gradient-to-r from-[#12796f] to-[#6FE9DC] px-3 py-1.5 text-white hover:opacity-90"
                     >
                       Open Google Meet
                     </a>
                     <button
                       onClick={() => setEditingMeetingLink(true)}
                       type="button"
-                      className="text-xs text-stone-500 hover:underline"
+                      className="text-xs text-[#9fb8ae] hover:underline"
                     >
                       Update link
                     </button>
@@ -252,12 +252,12 @@ export default function SessionRoomPage({ params }) {
                       value={meetingLinkDraft}
                       onChange={(e) => setMeetingLinkDraft(e.target.value)}
                       placeholder="Paste the Google Meet link here"
-                      className="flex-1 rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-sm"
+                      className="flex-1 rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-1.5 text-sm"
                     />
                     <button
                       onClick={saveMeetingLink}
                       disabled={savingMeetingLink}
-                      className="rounded-lg bg-teal-600 px-3 py-1.5 text-sm text-white hover:bg-teal-700 disabled:opacity-50"
+                      className="rounded-lg bg-gradient-to-r from-[#12796f] to-[#6FE9DC] px-3 py-1.5 text-sm text-white hover:opacity-90 disabled:opacity-50"
                     >
                       {savingMeetingLink ? "Saving…" : "Save link"}
                     </button>
@@ -272,22 +272,22 @@ export default function SessionRoomPage({ params }) {
                   href={session.meetingLink}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-block rounded-lg bg-teal-600 px-3 py-1.5 text-white hover:bg-teal-700"
+                  className="inline-block rounded-lg bg-gradient-to-r from-[#12796f] to-[#6FE9DC] px-3 py-1.5 text-white hover:opacity-90"
                 >
                   Join Google Meet
                 </a>
               ) : (
-                <p className="text-stone-500">Your mentor hasn&apos;t set up the video call yet.</p>
+                <p className="text-[#9fb8ae]">Your mentor hasn&apos;t set up the video call yet.</p>
               ))}
           </section>
 
-        <div className="flex h-80 flex-col rounded-lg border border-stone-200 bg-white">
+        <div className="flex h-80 flex-col rounded-lg border border-[#234339] bg-[#102420]">
           <div className="flex-1 overflow-y-auto p-3">
             {messages.map((m) => (
               <div key={m.id} className={`mb-2 flex ${m.senderId === user.id ? "justify-end" : "justify-start"}`}>
                 <div
                   className={`max-w-[75%] rounded-lg px-3 py-1.5 text-sm ${
-                    m.senderId === user.id ? "bg-teal-600 text-white" : "bg-stone-100 text-stone-900"
+                    m.senderId === user.id ? "bg-gradient-to-r from-[#12796f] to-[#6FE9DC] text-white" : "bg-[#17322b] text-[#e7f0ed]"
                   }`}
                 >
                   <p className="text-xs opacity-70">{m.sender.name}</p>
@@ -297,21 +297,21 @@ export default function SessionRoomPage({ params }) {
             ))}
             <div ref={messagesEndRef} />
           </div>
-          <form onSubmit={sendMessage} className="flex gap-2 border-t border-stone-200 bg-white p-2">
+          <form onSubmit={sendMessage} className="flex gap-2 border-t border-[#234339] bg-[#102420] p-2">
             <input
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               placeholder="Type a message…"
-              className="flex-1 rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-sm"
+              className="flex-1 rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-1.5 text-sm"
             />
-            <button type="submit" className="rounded-lg bg-teal-600 px-3 py-1.5 text-sm text-white hover:bg-teal-700">
+            <button type="submit" className="rounded-lg bg-gradient-to-r from-[#12796f] to-[#6FE9DC] px-3 py-1.5 text-sm text-white hover:opacity-90">
               Send
             </button>
           </form>
         </div>
 
         {isStudent && (
-          <section className="rounded-lg border border-stone-200 bg-white p-4 text-sm">
+          <section className="rounded-lg border border-[#234339] bg-[#102420] p-4 text-sm">
             <h2 className="mb-2 font-medium">Confidence tracking</h2>
             <div className="flex gap-6">
               <ConfidencePicker
@@ -329,24 +329,24 @@ export default function SessionRoomPage({ params }) {
         )}
 
         {isMentor && (
-          <section className="rounded-lg border border-stone-200 bg-white p-4 text-sm">
+          <section className="rounded-lg border border-[#234339] bg-[#102420] p-4 text-sm">
             <h2 className="mb-2 font-medium">Session notes</h2>
             <textarea
               rows={3}
               value={notesDraft}
               onChange={(e) => setNotesDraft(e.target.value)}
-              className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2"
+              className="w-full rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-2"
             />
             <button
               onClick={saveNotes}
               disabled={savingNotes}
-              className="mt-2 rounded-lg bg-teal-600 px-3 py-1.5 text-white hover:bg-teal-700 disabled:opacity-50"
+              className="mt-2 rounded-lg bg-gradient-to-r from-[#12796f] to-[#6FE9DC] px-3 py-1.5 text-white hover:opacity-90 disabled:opacity-50"
             >
               {savingNotes ? "Saving…" : "Save notes"}
             </button>
 
             {isOpen && (
-              <div className="mt-4 flex gap-2 border-t border-stone-200 bg-white pt-4">
+              <div className="mt-4 flex gap-2 border-t border-[#234339] bg-[#102420] pt-4">
                 <button
                   onClick={() => handleComplete("COMPLETED")}
                   disabled={completing}
@@ -357,7 +357,7 @@ export default function SessionRoomPage({ params }) {
                 <button
                   onClick={() => handleComplete("NO_SHOW")}
                   disabled={completing}
-                  className="rounded-lg border border-stone-300 bg-white px-3 py-1.5 hover:bg-stone-50 disabled:opacity-50"
+                  className="rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-1.5 hover:bg-[#17322b] disabled:opacity-50"
                 >
                   Mark no-show
                 </button>
@@ -367,15 +367,15 @@ export default function SessionRoomPage({ params }) {
         )}
 
         {canRate && (
-          <section className="rounded-lg border border-stone-200 bg-white p-4 text-sm">
+          <section className="rounded-lg border border-[#234339] bg-[#102420] p-4 text-sm">
             <h2 className="mb-2 font-medium">{isMentor ? "Rate the student" : "Rate your mentor"}</h2>
 
             {myRating ? (
               <div>
                 {myRating.score && <p>Your rating: {myRating.score} / 5</p>}
-                {myRating.comment && <p className="text-stone-600">&quot;{myRating.comment}&quot;</p>}
-                {myRating.isNoShow && <p className="text-amber-700">Flagged: no-show</p>}
-                {myRating.isMisconduct && <p className="text-red-700">Flagged: misconduct</p>}
+                {myRating.comment && <p className="text-[#9fb8ae]">&quot;{myRating.comment}&quot;</p>}
+                {myRating.isNoShow && <p className="text-amber-300">Flagged: no-show</p>}
+                {myRating.isMisconduct && <p className="text-red-400">Flagged: misconduct</p>}
               </div>
             ) : (
               <form onSubmit={submitRating} className="flex flex-col gap-3">
@@ -386,7 +386,7 @@ export default function SessionRoomPage({ params }) {
                       type="button"
                       onClick={() => setRatingScore(level)}
                       className={`h-8 w-8 rounded-lg border text-sm ${
-                        ratingScore === level ? "bg-teal-600 text-white" : "border-stone-300 bg-white hover:bg-stone-50"
+                        ratingScore === level ? "bg-gradient-to-r from-[#12796f] to-[#6FE9DC] text-white" : "border-[#2c4a40] bg-[#102420] hover:bg-[#17322b]"
                       }`}
                     >
                       {level}
@@ -398,10 +398,10 @@ export default function SessionRoomPage({ params }) {
                   placeholder="Optional comment"
                   value={ratingComment}
                   onChange={(e) => setRatingComment(e.target.value)}
-                  className="rounded-lg border border-stone-300 bg-white px-3 py-2"
+                  className="rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-2"
                 />
                 {isMentor && (
-                  <div className="flex gap-4 text-stone-700">
+                  <div className="flex gap-4 text-[#cfe0da]">
                     <label className="flex items-center gap-1.5">
                       <input
                         type="checkbox"
@@ -423,7 +423,7 @@ export default function SessionRoomPage({ params }) {
                 <button
                   type="submit"
                   disabled={submittingRating || (!ratingScore && !ratingNoShow && !ratingMisconduct)}
-                  className="self-start rounded-lg bg-teal-600 px-3 py-1.5 text-white hover:bg-teal-700 disabled:opacity-50"
+                  className="self-start rounded-lg bg-gradient-to-r from-[#12796f] to-[#6FE9DC] px-3 py-1.5 text-white hover:opacity-90 disabled:opacity-50"
                 >
                   {submittingRating ? "Submitting…" : "Submit rating"}
                 </button>
@@ -445,14 +445,14 @@ export default function SessionRoomPage({ params }) {
 function ConfidencePicker({ label, value, onChange }) {
   return (
     <div>
-      <p className="mb-1 text-stone-500">{label}</p>
+      <p className="mb-1 text-[#9fb8ae]">{label}</p>
       <div className="flex gap-1">
         {CONFIDENCE_LEVELS.map((level) => (
           <button
             key={level}
             onClick={() => onChange(level)}
             className={`h-7 w-7 rounded-lg border text-xs ${
-              value === level ? "bg-teal-600 text-white" : "border-stone-300 bg-white hover:bg-stone-50"
+              value === level ? "bg-gradient-to-r from-[#12796f] to-[#6FE9DC] text-white" : "border-[#2c4a40] bg-[#102420] hover:bg-[#17322b]"
             }`}
           >
             {level}

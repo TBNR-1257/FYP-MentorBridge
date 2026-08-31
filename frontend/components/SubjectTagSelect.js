@@ -75,14 +75,14 @@ export default function SubjectTagSelect({ value, onChange, placeholder, allowCr
 
   return (
     <div ref={containerRef} className="relative">
-      <div className="flex flex-wrap items-center gap-1 rounded-lg border border-stone-300 bg-white px-2 py-1.5">
+      <div className="flex flex-wrap items-center gap-1 rounded-lg border border-[#2c4a40] bg-[#102420] px-2 py-1.5">
         {value.map((name) => (
-          <span key={name} className="flex items-center gap-1 rounded bg-stone-100 px-2 py-0.5 text-sm text-stone-900">
+          <span key={name} className="flex items-center gap-1 rounded bg-[#17322b] px-2 py-0.5 text-sm text-[#e7f0ed]">
             {name}
             <button
               type="button"
               onClick={() => removeSubject(name)}
-              className="text-stone-500 hover:text-red-600"
+              className="text-[#9fb8ae] hover:text-red-400"
               aria-label={`Remove ${name}`}
             >
               &times;
@@ -104,13 +104,13 @@ export default function SubjectTagSelect({ value, onChange, placeholder, allowCr
         />
       </div>
       {open && (filtered.length > 0 || (allowCreate && canCreate) || (!allowCreate && canCreate && onRequestNew)) && (
-        <ul className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-stone-200 bg-white text-stone-900 shadow-md">
+        <ul className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-[#234339] bg-[#102420] text-[#e7f0ed] shadow-md">
           {filtered.map((s) => (
             <li key={s.id}>
               <button
                 type="button"
                 onClick={() => addSubject(s.name)}
-                className="block w-full px-3 py-2 text-left text-sm hover:bg-stone-100"
+                className="block w-full px-3 py-2 text-left text-sm hover:bg-[#1d3a32]"
               >
                 {s.name}
               </button>
@@ -121,7 +121,7 @@ export default function SubjectTagSelect({ value, onChange, placeholder, allowCr
               <button
                 type="button"
                 onClick={() => addSubject(query.trim())}
-                className="block w-full px-3 py-2 text-left text-sm text-stone-600 hover:bg-stone-100"
+                className="block w-full px-3 py-2 text-left text-sm text-[#9fb8ae] hover:bg-[#1d3a32]"
               >
                 + Add &quot;{query.trim()}&quot; as a new subject
               </button>
@@ -133,7 +133,7 @@ export default function SubjectTagSelect({ value, onChange, placeholder, allowCr
                 type="button"
                 onClick={handleRequestNew}
                 disabled={requesting || alreadyRequested}
-                className="block w-full px-3 py-2 text-left text-sm text-stone-600 hover:bg-stone-100 disabled:opacity-50"
+                className="block w-full px-3 py-2 text-left text-sm text-[#9fb8ae] hover:bg-[#1d3a32] disabled:opacity-50"
               >
                 {alreadyRequested
                   ? `Requested "${query.trim()}" — pending admin review`

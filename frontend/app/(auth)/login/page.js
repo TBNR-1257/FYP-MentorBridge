@@ -47,7 +47,7 @@ export default function LoginPage() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="rounded-lg border border-stone-300 bg-white px-3 py-2"
+            className="rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-2"
           />
         </div>
 
@@ -61,22 +61,22 @@ export default function LoginPage() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="rounded-lg border border-stone-300 bg-white px-3 py-2"
+            className="rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-2"
           />
         </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-red-400">{error}</p>}
 
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-lg bg-teal-600 px-4 py-2 text-white hover:bg-teal-700 disabled:opacity-50"
+          className="rounded-lg bg-gradient-to-r from-[#12796f] to-[#6FE9DC] px-4 py-2 text-white hover:opacity-90 disabled:opacity-50"
         >
           {submitting ? "Logging in…" : "Log in"}
         </button>
       </form>
 
-      <p className="text-sm text-stone-600">
+      <p className="text-sm text-[#9fb8ae]">
         Don&apos;t have an account?{" "}
         <Link href="/register" className="underline">
           Sign up

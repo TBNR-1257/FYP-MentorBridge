@@ -42,22 +42,22 @@ export default function Sidebar() {
       <div
         onClick={close}
         aria-hidden="true"
-        className={`fixed inset-0 z-30 bg-stone-900/30 transition-opacity ${
+        className={`fixed inset-0 z-30 bg-black/60 transition-opacity ${
           open ? "opacity-100" : "pointer-events-none opacity-0"
         }`}
       />
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col gap-1 border-r border-stone-200 bg-white p-4 shadow-lg transition-transform ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col gap-1 border-r border-[#234339] bg-[#102420] p-4 shadow-lg transition-transform ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="mb-3 flex items-center justify-between">
-          <span className="text-sm font-semibold text-stone-900">Menu</span>
+          <span className="text-sm font-semibold text-[#e7f0ed]">Menu</span>
           <button
             onClick={close}
             aria-label="Close navigation menu"
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-stone-500 hover:bg-stone-100"
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-[#9fb8ae] hover:bg-[#1d3a32]"
           >
             &times;
           </button>
@@ -69,7 +69,7 @@ export default function Sidebar() {
               key={link.href}
               href={link.href}
               onClick={close}
-              className="rounded-lg px-3 py-2 text-sm text-stone-700 hover:bg-stone-100"
+              className="rounded-lg px-3 py-2 text-sm text-[#cfe0da] hover:bg-[#1d3a32]"
             >
               {link.label}
             </Link>

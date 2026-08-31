@@ -23,9 +23,9 @@ function bucketFor(status) {
 }
 
 const BUCKET_PILL = {
-  OPEN: "bg-teal-100 text-teal-800",
-  REQUESTED: "bg-amber-100 text-amber-800",
-  COMPLETED: "bg-stone-200 text-stone-600",
+  OPEN: "bg-[#39C5BB]/15 text-[#a8f0e6]",
+  REQUESTED: "bg-amber-500/15 text-amber-300",
+  COMPLETED: "bg-[#1d3a32] text-[#9fb8ae]",
 };
 
 export default function StudentHelpRequestsPage() {
@@ -71,7 +71,7 @@ export default function StudentHelpRequestsPage() {
           <h1 className="text-2xl font-semibold">My Help Requests</h1>
           <Link
             href="/student/help-requests/new"
-            className="rounded-lg bg-teal-600 px-3 py-1.5 text-sm text-white hover:bg-teal-700"
+            className="rounded-lg bg-gradient-to-r from-[#12796f] to-[#6FE9DC] px-3 py-1.5 text-sm text-white hover:opacity-90"
           >
             + New request
           </Link>
@@ -82,18 +82,18 @@ export default function StudentHelpRequestsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by topic or subject…"
-            className="flex-1 rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm"
+            className="flex-1 rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-2 text-sm"
           />
           <FilterChips value={statusFilter} onChange={setStatusFilter} options={STATUS_FILTERS} />
         </div>
 
         <div className="mt-6 flex flex-col gap-2">
           {fetching ? (
-            <p className="text-sm text-stone-500">Loading…</p>
+            <p className="text-sm text-[#9fb8ae]">Loading…</p>
           ) : helpRequests.length === 0 ? (
-            <p className="text-sm text-stone-500">You haven&apos;t posted any help requests yet.</p>
+            <p className="text-sm text-[#9fb8ae]">You haven&apos;t posted any help requests yet.</p>
           ) : filteredRequests.length === 0 ? (
-            <p className="text-sm text-stone-500">No requests match your search/filters.</p>
+            <p className="text-sm text-[#9fb8ae]">No requests match your search/filters.</p>
           ) : (
             pagedRequests.map((hr) => <HelpRequestRow key={hr.id} hr={hr} />)
           )}
@@ -110,11 +110,11 @@ function HelpRequestRow({ hr }) {
   return (
     <Link
       href={hr.sessions[0] ? `/sessions/${hr.sessions[0].id}` : `/student/help-requests/${hr.id}`}
-      className="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white p-3 text-sm hover:bg-stone-50"
+      className="flex items-center justify-between gap-4 rounded-lg border border-[#234339] bg-[#102420] p-3 text-sm hover:bg-[#17322b]"
     >
       <div className="min-w-0">
         <span className="font-medium">{hr.topic}</span>
-        <p className="truncate text-stone-500">
+        <p className="truncate text-[#9fb8ae]">
           {hr.subject.name} · {hr.difficultyLevel}
         </p>
       </div>

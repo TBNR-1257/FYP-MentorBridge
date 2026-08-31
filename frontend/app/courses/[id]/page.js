@@ -211,23 +211,23 @@ export default function CourseRoomPage({ params }) {
         <div>
           <Link
             href={isMentor ? "/mentor/courses" : "/student/dashboard"}
-            className="text-sm text-stone-500 hover:underline"
+            className="text-sm text-[#9fb8ae] hover:underline"
           >
             &larr; Back
           </Link>
           <h1 className="mt-2 text-2xl font-semibold">
             {course.title}{" "}
-            <span className="align-middle text-xs font-normal text-stone-500">
+            <span className="align-middle text-xs font-normal text-[#9fb8ae]">
               {course.mode} · {course.status}
             </span>
           </h1>
-          <p className="text-stone-600">
+          <p className="text-[#9fb8ae]">
             {course.subject.name} · {course.difficultyLevel} · Taught by {course.mentorProfile.user.name} ·{" "}
             {course._count.enrollments} enrolled
           </p>
-          <p className="mt-2 text-sm text-stone-700">{course.description}</p>
+          <p className="mt-2 text-sm text-[#cfe0da]">{course.description}</p>
           {course.timeSlots.length > 0 && (
-            <p className="mt-1 text-xs text-stone-500">
+            <p className="mt-1 text-xs text-[#9fb8ae]">
               {course.timeSlots
                 .map((slot) => `${DAY_LABELS[slot.dayOfWeek]} ${slot.startTime}–${slot.endTime}`)
                 .join(", ")}
@@ -240,7 +240,7 @@ export default function CourseRoomPage({ params }) {
             {!isArchived &&
               (endingConfirm ? (
                 <>
-                  <span className="text-xs text-stone-600">
+                  <span className="text-xs text-[#9fb8ae]">
                     End this course? Upcoming sessions will be cancelled and students notified.
                   </span>
                   <button
@@ -253,7 +253,7 @@ export default function CourseRoomPage({ params }) {
                   <button
                     onClick={() => setEndingConfirm(false)}
                     type="button"
-                    className="text-xs text-stone-500 hover:underline"
+                    className="text-xs text-[#9fb8ae] hover:underline"
                   >
                     Cancel
                   </button>
@@ -261,7 +261,7 @@ export default function CourseRoomPage({ params }) {
               ) : (
                 <button
                   onClick={() => setEndingConfirm(true)}
-                  className="rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-xs hover:bg-stone-50"
+                  className="rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-1.5 text-xs hover:bg-[#17322b]"
                 >
                   End course
                 </button>
@@ -269,31 +269,31 @@ export default function CourseRoomPage({ params }) {
             <button
               onClick={handleClone}
               disabled={cloning}
-              className="rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-xs hover:bg-stone-50 disabled:opacity-50"
+              className="rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-1.5 text-xs hover:bg-[#17322b] disabled:opacity-50"
             >
               {cloning ? "Cloning…" : "Clone this course"}
             </button>
           </div>
         )}
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-red-400">{error}</p>}
 
         {!isMentor && canAccessRoom && !course.mentorProfile.user.isActive && (
-          <p className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-800">
+          <p className="rounded-lg bg-red-500/10 px-4 py-2 text-sm text-red-300">
             {course.mentorProfile.user.name}&apos;s account has been suspended — they may not respond.
           </p>
         )}
 
         {!canAccessRoom ? (
           course.isLocked ? (
-            <p className="self-start rounded-lg bg-stone-100 px-4 py-2 text-sm text-stone-700">
+            <p className="self-start rounded-lg bg-[#17322b] px-4 py-2 text-sm text-[#cfe0da]">
               Enrollment is closed — this course has already started.
             </p>
           ) : (
             <button
               onClick={handleJoin}
               disabled={joining}
-              className="self-start rounded-lg bg-teal-600 px-4 py-2 text-white hover:bg-teal-700 disabled:opacity-50"
+              className="self-start rounded-lg bg-gradient-to-r from-[#12796f] to-[#6FE9DC] px-4 py-2 text-white hover:opacity-90 disabled:opacity-50"
             >
               {joining ? "Joining…" : "Join this course"}
             </button>
@@ -302,7 +302,7 @@ export default function CourseRoomPage({ params }) {
           <>
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="flex min-w-0 flex-col gap-4">
-            <section className="rounded-lg border border-stone-200 bg-white p-4 text-sm">
+            <section className="rounded-lg border border-[#234339] bg-[#102420] p-4 text-sm">
               <h2 className="mb-2 font-medium">Video call</h2>
 
               {isMentor && (
@@ -311,7 +311,7 @@ export default function CourseRoomPage({ params }) {
                     <button
                       onClick={openGoogleCalendarSetup}
                       type="button"
-                      className="self-start rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-sm hover:bg-stone-50"
+                      className="self-start rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-1.5 text-sm hover:bg-[#17322b]"
                     >
                       Set up a Google Meet
                     </button>
@@ -323,7 +323,7 @@ export default function CourseRoomPage({ params }) {
                         href={course.meetingLink}
                         target="_blank"
                         rel="noreferrer"
-                        className="rounded-lg bg-teal-600 px-3 py-1.5 text-white hover:bg-teal-700"
+                        className="rounded-lg bg-gradient-to-r from-[#12796f] to-[#6FE9DC] px-3 py-1.5 text-white hover:opacity-90"
                       >
                         Open Google Meet
                       </a>
@@ -331,26 +331,26 @@ export default function CourseRoomPage({ params }) {
                         <button
                           onClick={() => setEditingMeetingLink(true)}
                           type="button"
-                          className="text-xs text-stone-500 hover:underline"
+                          className="text-xs text-[#9fb8ae] hover:underline"
                         >
                           Update link
                         </button>
                       )}
                     </div>
                   ) : isArchived ? (
-                    <p className="text-stone-500">This course has ended.</p>
+                    <p className="text-[#9fb8ae]">This course has ended.</p>
                   ) : (
                     <div className="flex gap-2">
                       <input
                         value={meetingLinkDraft}
                         onChange={(e) => setMeetingLinkDraft(e.target.value)}
                         placeholder="Paste the Google Meet link here"
-                        className="flex-1 rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-sm"
+                        className="flex-1 rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-1.5 text-sm"
                       />
                       <button
                         onClick={saveMeetingLink}
                         disabled={savingMeetingLink}
-                        className="rounded-lg bg-teal-600 px-3 py-1.5 text-sm text-white hover:bg-teal-700 disabled:opacity-50"
+                        className="rounded-lg bg-gradient-to-r from-[#12796f] to-[#6FE9DC] px-3 py-1.5 text-sm text-white hover:opacity-90 disabled:opacity-50"
                       >
                         {savingMeetingLink ? "Saving…" : "Save link"}
                       </button>
@@ -365,22 +365,22 @@ export default function CourseRoomPage({ params }) {
                     href={course.meetingLink}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-block rounded-lg bg-teal-600 px-3 py-1.5 text-white hover:bg-teal-700"
+                    className="inline-block rounded-lg bg-gradient-to-r from-[#12796f] to-[#6FE9DC] px-3 py-1.5 text-white hover:opacity-90"
                   >
                     Join Google Meet
                   </a>
                 ) : (
-                  <p className="text-stone-500">Your mentor hasn&apos;t set up the video call yet.</p>
+                  <p className="text-[#9fb8ae]">Your mentor hasn&apos;t set up the video call yet.</p>
                 ))}
             </section>
 
-            <div className="flex min-h-80 flex-1 flex-col rounded-lg border border-stone-200 bg-white">
+            <div className="flex min-h-80 flex-1 flex-col rounded-lg border border-[#234339] bg-[#102420]">
               <div className="flex-1 overflow-y-auto p-3">
                 {messages.map((m) => (
                   <div key={m.id} className={`mb-2 flex ${m.senderId === user.id ? "justify-end" : "justify-start"}`}>
                     <div
                       className={`max-w-[75%] rounded-lg px-3 py-1.5 text-sm ${
-                        m.senderId === user.id ? "bg-teal-600 text-white" : "bg-stone-100 text-stone-900"
+                        m.senderId === user.id ? "bg-gradient-to-r from-[#12796f] to-[#6FE9DC] text-white" : "bg-[#17322b] text-[#e7f0ed]"
                       }`}
                     >
                       <p className="text-xs opacity-70">{m.sender.name}</p>
@@ -391,18 +391,18 @@ export default function CourseRoomPage({ params }) {
                 <div ref={messagesEndRef} />
               </div>
               {isArchived ? (
-                <p className="border-t border-stone-200 bg-white p-3 text-xs text-stone-500">
+                <p className="border-t border-[#234339] bg-[#102420] p-3 text-xs text-[#9fb8ae]">
                   This course has ended — the chat is now read-only.
                 </p>
               ) : (
-                <form onSubmit={sendMessage} className="flex gap-2 border-t border-stone-200 bg-white p-2">
+                <form onSubmit={sendMessage} className="flex gap-2 border-t border-[#234339] bg-[#102420] p-2">
                   <input
                     value={draft}
                     onChange={(e) => setDraft(e.target.value)}
                     placeholder="Message the class…"
-                    className="flex-1 rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-sm"
+                    className="flex-1 rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-1.5 text-sm"
                   />
-                  <button type="submit" className="rounded-lg bg-teal-600 px-3 py-1.5 text-sm text-white hover:bg-teal-700">
+                  <button type="submit" className="rounded-lg bg-gradient-to-r from-[#12796f] to-[#6FE9DC] px-3 py-1.5 text-sm text-white hover:opacity-90">
                     Send
                   </button>
                 </form>
@@ -413,23 +413,23 @@ export default function CourseRoomPage({ params }) {
           <div className="flex flex-col gap-4 lg:sticky lg:top-6">
             <ResourceList resources={resources} canAdd={isMentor && !isArchived} onAdd={handleAddResource} />
 
-            <section className="rounded-lg border border-stone-200 bg-white p-4 text-sm">
+            <section className="rounded-lg border border-[#234339] bg-[#102420] p-4 text-sm">
               <h2 className="mb-2 font-medium">Class sessions</h2>
               {sessions.length === 0 ? (
-                <p className="text-stone-500">No sessions yet.</p>
+                <p className="text-[#9fb8ae]">No sessions yet.</p>
               ) : (
                 <ul className="flex max-h-72 flex-col gap-2 overflow-y-auto">
                   {sessions.map((s) => (
-                    <li key={s.id} className="rounded-lg border border-stone-100 p-2">
+                    <li key={s.id} className="rounded-lg border border-[#1a2e28] p-2">
                       <p>{new Date(s.scheduledAt).toLocaleString()}</p>
-                      <p className="text-stone-500">{s.status}</p>
+                      <p className="text-[#9fb8ae]">{s.status}</p>
                       {isMentor && !isArchived && s.status === "SCHEDULED" && (
                         <div className="mt-2 flex flex-wrap gap-2">
                           {!s.startedAt && (
                             <button
                               onClick={() => handleSessionAction(s.id, "start")}
                               disabled={actioningSessionId === s.id}
-                              className="rounded-lg border border-stone-300 bg-white px-2 py-1 text-xs hover:bg-stone-50 disabled:opacity-50"
+                              className="rounded-lg border border-[#2c4a40] bg-[#102420] px-2 py-1 text-xs hover:bg-[#17322b] disabled:opacity-50"
                             >
                               Start
                             </button>
@@ -444,7 +444,7 @@ export default function CourseRoomPage({ params }) {
                           <button
                             onClick={() => handleSessionAction(s.id, "complete", "NO_SHOW")}
                             disabled={actioningSessionId === s.id}
-                            className="rounded-lg border border-stone-300 bg-white px-2 py-1 text-xs hover:bg-stone-50 disabled:opacity-50"
+                            className="rounded-lg border border-[#2c4a40] bg-[#102420] px-2 py-1 text-xs hover:bg-[#17322b] disabled:opacity-50"
                           >
                             No-show
                           </button>
@@ -459,13 +459,13 @@ export default function CourseRoomPage({ params }) {
           </div>
 
             {!isMentor && isArchived && (
-              <section className="rounded-lg border border-stone-200 bg-white p-4 text-sm">
+              <section className="rounded-lg border border-[#234339] bg-[#102420] p-4 text-sm">
                 <h2 className="mb-2 font-medium">Rate this course</h2>
 
                 {myCourseRating ? (
                   <div>
                     <p>Your rating: {myCourseRating.score} / 5</p>
-                    {myCourseRating.comment && <p className="text-stone-600">&quot;{myCourseRating.comment}&quot;</p>}
+                    {myCourseRating.comment && <p className="text-[#9fb8ae]">&quot;{myCourseRating.comment}&quot;</p>}
                   </div>
                 ) : (
                   <form onSubmit={submitRating} className="flex flex-col gap-3">
@@ -476,7 +476,7 @@ export default function CourseRoomPage({ params }) {
                           type="button"
                           onClick={() => setRatingScore(level)}
                           className={`h-8 w-8 rounded-lg border text-sm ${
-                            ratingScore === level ? "bg-teal-600 text-white" : "border-stone-300 bg-white hover:bg-stone-50"
+                            ratingScore === level ? "bg-gradient-to-r from-[#12796f] to-[#6FE9DC] text-white" : "border-[#2c4a40] bg-[#102420] hover:bg-[#17322b]"
                           }`}
                         >
                           {level}
@@ -488,12 +488,12 @@ export default function CourseRoomPage({ params }) {
                       placeholder="Optional comment"
                       value={ratingComment}
                       onChange={(e) => setRatingComment(e.target.value)}
-                      className="rounded-lg border border-stone-300 bg-white px-3 py-2"
+                      className="rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-2"
                     />
                     <button
                       type="submit"
                       disabled={submittingRating || !ratingScore}
-                      className="self-start rounded-lg bg-teal-600 px-3 py-1.5 text-white hover:bg-teal-700 disabled:opacity-50"
+                      className="self-start rounded-lg bg-gradient-to-r from-[#12796f] to-[#6FE9DC] px-3 py-1.5 text-white hover:opacity-90 disabled:opacity-50"
                     >
                       {submittingRating ? "Submitting…" : "Submit rating"}
                     </button>
@@ -503,14 +503,14 @@ export default function CourseRoomPage({ params }) {
             )}
 
             {course.members.length > 0 && (
-              <section className="rounded-lg border border-stone-200 bg-white p-4 text-sm">
+              <section className="rounded-lg border border-[#234339] bg-[#102420] p-4 text-sm">
                 <h2 className="mb-2 font-medium">Students ({course.members.length})</h2>
-                <p className="text-stone-600">
+                <p className="text-[#9fb8ae]">
                   {course.members.map((m, i) => (
                     <span key={m.name + i}>
                       {i > 0 && ", "}
                       {m.name}
-                      {!m.isActive && <span className="text-red-600"> (suspended)</span>}
+                      {!m.isActive && <span className="text-red-400"> (suspended)</span>}
                     </span>
                   ))}
                 </p>

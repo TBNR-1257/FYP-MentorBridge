@@ -12,16 +12,16 @@ export default function BarChart({ data, maxValue }) {
     <div className="flex flex-col gap-2">
       {data.map((d) => (
         <div key={d.label} className="flex items-center gap-2 text-xs">
-          <span className="w-28 shrink-0 truncate text-stone-600" title={d.label}>
+          <span className="w-28 shrink-0 truncate text-[#9fb8ae]" title={d.label}>
             {d.label}
           </span>
-          <div className="h-3 flex-1 overflow-hidden rounded-full bg-stone-100">
+          <div className="h-3 flex-1 overflow-hidden rounded-full bg-[#17322b]">
             <div
-              className="h-full rounded-full bg-teal-600"
+              className="h-full rounded-full bg-gradient-to-r from-[#12796f] to-[#6FE9DC]"
               style={{ width: `${max === 0 ? 0 : (d.value / max) * 100}%` }}
             />
           </div>
-          <span className="w-8 shrink-0 text-right font-medium text-stone-700">{d.value}</span>
+          <span className="w-8 shrink-0 text-right font-medium text-[#cfe0da]">{d.value}</span>
         </div>
       ))}
     </div>

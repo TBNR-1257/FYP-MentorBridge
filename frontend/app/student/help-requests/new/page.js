@@ -117,7 +117,7 @@ export default function NewHelpRequestPage() {
             placeholder="Quadratic equations"
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
-            className="rounded-lg border border-stone-300 bg-white px-3 py-2"
+            className="rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-2"
           />
         </Field>
 
@@ -127,7 +127,7 @@ export default function NewHelpRequestPage() {
             placeholder="Anything else that would help a mentor understand what you need…"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="rounded-lg border border-stone-300 bg-white px-3 py-2"
+            className="rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-2"
           />
         </Field>
 
@@ -135,7 +135,7 @@ export default function NewHelpRequestPage() {
           <select
             value={difficultyLevel}
             onChange={(e) => setDifficultyLevel(e.target.value)}
-            className="rounded-lg border border-stone-300 bg-white px-3 py-2"
+            className="rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-2"
           >
             {DIFFICULTY_LEVELS.map((level) => (
               <option key={level} value={level}>
@@ -151,7 +151,7 @@ export default function NewHelpRequestPage() {
             placeholder="English, Malay"
             value={languagePreferences}
             onChange={(e) => setLanguagePreferences(e.target.value)}
-            className="rounded-lg border border-stone-300 bg-white px-3 py-2"
+            className="rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-2"
           />
         </Field>
 
@@ -159,7 +159,7 @@ export default function NewHelpRequestPage() {
           <select
             value={urgencyLevel}
             onChange={(e) => setUrgencyLevel(e.target.value)}
-            className="rounded-lg border border-stone-300 bg-white px-3 py-2"
+            className="rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-2"
           >
             {URGENCY_LEVELS.map((level) => (
               <option key={level} value={level}>
@@ -175,7 +175,7 @@ export default function NewHelpRequestPage() {
             <select
               value={preferredDayOfWeek}
               onChange={(e) => setPreferredDayOfWeek(e.target.value)}
-              className="rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-sm"
+              className="rounded-lg border border-[#2c4a40] bg-[#102420] px-2 py-1.5 text-sm"
             >
               {DAYS.map((day) => (
                 <option key={day.value} value={day.value}>
@@ -187,24 +187,24 @@ export default function NewHelpRequestPage() {
               type="time"
               value={preferredStartTime}
               onChange={(e) => setPreferredStartTime(e.target.value)}
-              className="rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-sm"
+              className="rounded-lg border border-[#2c4a40] bg-[#102420] px-2 py-1.5 text-sm"
             />
-            <span className="text-stone-500">to</span>
+            <span className="text-[#9fb8ae]">to</span>
             <input
               type="time"
               value={preferredEndTime}
               onChange={(e) => setPreferredEndTime(e.target.value)}
-              className="rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-sm"
+              className="rounded-lg border border-[#2c4a40] bg-[#102420] px-2 py-1.5 text-sm"
             />
           </div>
         </fieldset>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-red-400">{error}</p>}
 
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-lg bg-teal-600 px-4 py-2 text-white hover:bg-teal-700 disabled:opacity-50"
+          className="rounded-lg bg-gradient-to-r from-[#12796f] to-[#6FE9DC] px-4 py-2 text-white hover:opacity-90 disabled:opacity-50"
         >
           {submitting ? "Posting…" : "Post request"}
         </button>

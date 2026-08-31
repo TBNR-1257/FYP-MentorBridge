@@ -57,10 +57,10 @@ export default function SubjectCombobox({ value, onChange, placeholder, required
         }}
         onFocus={() => setOpen(true)}
         autoComplete="off"
-        className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2"
+        className="w-full rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-2"
       />
       {open && (filtered.length > 0 || canCreate) && (
-        <ul className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-stone-200 bg-white text-stone-900 shadow-md">
+        <ul className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-[#234339] bg-[#102420] text-[#e7f0ed] shadow-md">
           {filtered.map((s) => (
             <li key={s.id}>
               <button
@@ -69,7 +69,7 @@ export default function SubjectCombobox({ value, onChange, placeholder, required
                   onChange(s.name);
                   setOpen(false);
                 }}
-                className="block w-full px-3 py-2 text-left text-sm hover:bg-stone-100"
+                className="block w-full px-3 py-2 text-left text-sm hover:bg-[#1d3a32]"
               >
                 {s.name}
               </button>
@@ -80,7 +80,7 @@ export default function SubjectCombobox({ value, onChange, placeholder, required
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="block w-full px-3 py-2 text-left text-sm text-stone-600 hover:bg-stone-100"
+                className="block w-full px-3 py-2 text-left text-sm text-[#9fb8ae] hover:bg-[#1d3a32]"
               >
                 Use &quot;{value.trim()}&quot; as a new subject
               </button>
@@ -92,7 +92,7 @@ export default function SubjectCombobox({ value, onChange, placeholder, required
                 type="button"
                 onClick={handleRequestNew}
                 disabled={requesting || alreadyRequested}
-                className="block w-full px-3 py-2 text-left text-sm text-stone-600 hover:bg-stone-100 disabled:opacity-50"
+                className="block w-full px-3 py-2 text-left text-sm text-[#9fb8ae] hover:bg-[#1d3a32] disabled:opacity-50"
               >
                 {alreadyRequested
                   ? `Requested "${value.trim()}" — pending admin review`

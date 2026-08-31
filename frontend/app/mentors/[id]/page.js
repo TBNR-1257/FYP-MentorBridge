@@ -75,7 +75,7 @@ export default function MentorProfilePage({ params }) {
     <main className="flex flex-1 flex-col items-center gap-6 px-6 py-10">
       <div className="w-full max-w-2xl">
         <h1 className="text-2xl font-semibold">{mentor.name}</h1>
-        <p className="text-stone-600">
+        <p className="text-[#9fb8ae]">
           {mentor.subjects.map((s) => s.name).join(", ")}
           {mentor.avgRating !== null && (
             <>
@@ -84,20 +84,20 @@ export default function MentorProfilePage({ params }) {
             </>
           )}
         </p>
-        <p className="text-sm text-stone-500">{mentor.totalServiceHours} hours volunteered</p>
+        <p className="text-sm text-[#9fb8ae]">{mentor.totalServiceHours} hours volunteered</p>
 
         {!mentor.isActive && (
-          <p className="mt-3 rounded-lg bg-red-50 px-4 py-2 text-sm text-red-800">
+          <p className="mt-3 rounded-lg bg-red-500/10 px-4 py-2 text-sm text-red-300">
             This mentor&apos;s account has been suspended.
           </p>
         )}
 
-        {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+        {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
       </div>
 
-      {mentor.bio && <p className="w-full max-w-2xl text-sm text-stone-700">{mentor.bio}</p>}
+      {mentor.bio && <p className="w-full max-w-2xl text-sm text-[#cfe0da]">{mentor.bio}</p>}
 
-      <div className="w-full max-w-2xl rounded-lg border border-stone-200 bg-white p-4 text-sm">
+      <div className="w-full max-w-2xl rounded-lg border border-[#234339] bg-[#102420] p-4 text-sm">
         <dl className="flex flex-col gap-2">
           <Row label="Qualifications" value={mentor.qualifications} />
           <Row label="Languages" value={mentor.languages.join(", ")} />
@@ -107,7 +107,7 @@ export default function MentorProfilePage({ params }) {
       {mentor.badges.length > 0 && (
         <section className="w-full max-w-2xl">
           <h2 className="mb-3 text-lg font-medium">Badges</h2>
-          <div className="grid grid-cols-4 gap-4 rounded-lg border border-stone-200 bg-white p-4 sm:grid-cols-4">
+          <div className="grid grid-cols-4 gap-4 rounded-lg border border-[#234339] bg-[#102420] p-4 sm:grid-cols-4">
             {mentor.badges.map((badge) => (
               <Badge key={badge.id} badge={badge} earned />
             ))}
@@ -120,13 +120,13 @@ export default function MentorProfilePage({ params }) {
           <h2 className="mb-3 text-lg font-medium">Active courses</h2>
           <ul className="flex flex-col gap-2">
             {mentor.courses.map((course) => (
-              <li key={course.id} className="rounded-lg border border-stone-200 bg-white p-3 text-sm">
+              <li key={course.id} className="rounded-lg border border-[#234339] bg-[#102420] p-3 text-sm">
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <Link href={`/courses/${course.id}`} className="font-medium hover:underline">
                       {course.title}
                     </Link>
-                    <p className="text-stone-500">
+                    <p className="text-[#9fb8ae]">
                       {course.subject.name} · {course.difficultyLevel} · {course._count.enrollments} enrolled
                     </p>
                   </div>
@@ -134,7 +134,7 @@ export default function MentorProfilePage({ params }) {
                     <button
                       onClick={() => handleJoin(course.id)}
                       disabled={joiningId === course.id}
-                      className="shrink-0 rounded-lg bg-teal-600 px-3 py-1.5 text-xs text-white hover:bg-teal-700 disabled:opacity-50"
+                      className="shrink-0 rounded-lg bg-gradient-to-r from-[#12796f] to-[#6FE9DC] px-3 py-1.5 text-xs text-white hover:opacity-90 disabled:opacity-50"
                     >
                       {joiningId === course.id ? "Joining…" : "Join"}
                     </button>
@@ -149,18 +149,18 @@ export default function MentorProfilePage({ params }) {
       <section className="w-full max-w-2xl">
         <h2 className="mb-3 text-lg font-medium">Endorsements</h2>
         {mentor.endorsements.length === 0 ? (
-          <p className="text-sm text-stone-500">No endorsements yet.</p>
+          <p className="text-sm text-[#9fb8ae]">No endorsements yet.</p>
         ) : (
           <div className="flex flex-col gap-3">
             {mentor.endorsements.map((group) => (
-              <div key={group.subject} className="rounded-lg border border-stone-200 bg-white p-3 text-sm">
+              <div key={group.subject} className="rounded-lg border border-[#234339] bg-[#102420] p-3 text-sm">
                 <p className="font-medium">
-                  {group.subject} <span className="font-normal text-stone-500">({group.count})</span>
+                  {group.subject} <span className="font-normal text-[#9fb8ae]">({group.count})</span>
                 </p>
                 <ul className="mt-2 flex flex-col gap-2">
                   {group.items.map((item, i) => (
-                    <li key={i} className="text-stone-600">
-                      <span className="font-medium text-stone-800">{item.endorserName}</span>
+                    <li key={i} className="text-[#9fb8ae]">
+                      <span className="font-medium text-[#e7f0ed]">{item.endorserName}</span>
                       {item.message && <>: &quot;{item.message}&quot;</>}
                     </li>
                   ))}
@@ -171,12 +171,12 @@ export default function MentorProfilePage({ params }) {
         )}
 
         {user.role === "STUDENT" && eligibleSubjects.length > 0 && (
-          <form onSubmit={handleEndorse} className="mt-4 flex flex-col gap-2 rounded-lg border border-stone-200 bg-white p-3">
+          <form onSubmit={handleEndorse} className="mt-4 flex flex-col gap-2 rounded-lg border border-[#234339] bg-[#102420] p-3">
             <p className="text-sm font-medium">Endorse this mentor</p>
             <select
               value={selectedSubjectId}
               onChange={(e) => setSelectedSubjectId(e.target.value)}
-              className="rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-sm"
+              className="rounded-lg border border-[#2c4a40] bg-[#102420] px-2 py-1.5 text-sm"
             >
               {eligibleSubjects.map((s) => (
                 <option key={s.id} value={s.id}>
@@ -189,12 +189,12 @@ export default function MentorProfilePage({ params }) {
               placeholder="Optional message…"
               value={endorseMessage}
               onChange={(e) => setEndorseMessage(e.target.value)}
-              className="rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-sm"
+              className="rounded-lg border border-[#2c4a40] bg-[#102420] px-2 py-1.5 text-sm"
             />
             <button
               type="submit"
               disabled={submitting}
-              className="self-start rounded-lg bg-teal-600 px-3 py-1.5 text-sm text-white hover:bg-teal-700 disabled:opacity-50"
+              className="self-start rounded-lg bg-gradient-to-r from-[#12796f] to-[#6FE9DC] px-3 py-1.5 text-sm text-white hover:opacity-90 disabled:opacity-50"
             >
               {submitting ? "Submitting…" : "Submit endorsement"}
             </button>
@@ -208,7 +208,7 @@ export default function MentorProfilePage({ params }) {
 function Row({ label, value }) {
   return (
     <div className="flex justify-between gap-4">
-      <dt className="text-stone-500">{label}</dt>
+      <dt className="text-[#9fb8ae]">{label}</dt>
       <dd className="font-medium">{value || "—"}</dd>
     </div>
   );

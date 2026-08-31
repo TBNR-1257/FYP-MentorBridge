@@ -96,7 +96,7 @@ export default function AdminUsersPage() {
           <select
             value={role}
             onChange={(e) => setRole(e.target.value)}
-            className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm"
+            className="rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-2 text-sm"
           >
             {ROLES.map((r) => (
               <option key={r} value={r}>
@@ -108,34 +108,34 @@ export default function AdminUsersPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name or email…"
-            className="flex-1 rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm"
+            className="flex-1 rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-2 text-sm"
           />
         </div>
 
-        {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+        {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
 
         {!fetching && total > 0 && (
-          <p className="mt-3 text-xs text-stone-500">
+          <p className="mt-3 text-xs text-[#9fb8ae]">
             {total} user{total === 1 ? "" : "s"} found
           </p>
         )}
 
         {fetching ? (
-          <p className="mt-6 text-sm text-stone-500">Loading…</p>
+          <p className="mt-6 text-sm text-[#9fb8ae]">Loading…</p>
         ) : users.length === 0 ? (
-          <p className="mt-6 text-sm text-stone-500">No users found.</p>
+          <p className="mt-6 text-sm text-[#9fb8ae]">No users found.</p>
         ) : (
           <ul className="mt-4 flex flex-col gap-2">
             {users.map((u) => (
-              <li key={u.id} className="rounded-lg border border-stone-200 bg-white p-3 text-sm">
+              <li key={u.id} className="rounded-lg border border-[#234339] bg-[#102420] p-3 text-sm">
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <p className="font-medium">
-                      {u.name} <span className="text-xs font-normal text-stone-500">({u.role})</span>
+                      {u.name} <span className="text-xs font-normal text-[#9fb8ae]">({u.role})</span>
                     </p>
-                    <p className="text-stone-500">{u.email}</p>
+                    <p className="text-[#9fb8ae]">{u.email}</p>
                     {!u.isActive && (
-                      <p className="mt-1 text-xs text-red-600">
+                      <p className="mt-1 text-xs text-red-400">
                         Suspended{u.suspendedReason ? `: ${u.suspendedReason}` : ""}
                       </p>
                     )}
@@ -145,7 +145,7 @@ export default function AdminUsersPage() {
                       {u.isActive ? (
                         <button
                           onClick={() => setSuspendingId(suspendingId === u.id ? null : u.id)}
-                          className="rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-xs hover:bg-stone-50"
+                          className="rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-1.5 text-xs hover:bg-[#17322b]"
                         >
                           Suspend
                         </button>
@@ -153,7 +153,7 @@ export default function AdminUsersPage() {
                         <button
                           onClick={() => handleReactivate(u.id)}
                           disabled={actioningId === u.id}
-                          className="rounded-lg bg-teal-600 px-3 py-1.5 text-xs text-white hover:bg-teal-700 disabled:opacity-50"
+                          className="rounded-lg bg-gradient-to-r from-[#12796f] to-[#6FE9DC] px-3 py-1.5 text-xs text-white hover:opacity-90 disabled:opacity-50"
                         >
                           Reactivate
                         </button>
@@ -163,12 +163,12 @@ export default function AdminUsersPage() {
                 </div>
 
                 {suspendingId === u.id && (
-                  <div className="mt-3 flex gap-2 border-t border-stone-100 pt-3">
+                  <div className="mt-3 flex gap-2 border-t border-[#1a2e28] pt-3">
                     <input
                       value={reasonDraft}
                       onChange={(e) => setReasonDraft(e.target.value)}
                       placeholder="Reason for suspension…"
-                      className="flex-1 rounded-lg border border-stone-300 bg-white px-2 py-1 text-xs"
+                      className="flex-1 rounded-lg border border-[#2c4a40] bg-[#102420] px-2 py-1 text-xs"
                     />
                     <button
                       onClick={() => handleSuspend(u.id)}

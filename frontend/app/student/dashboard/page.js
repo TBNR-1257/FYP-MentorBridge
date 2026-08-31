@@ -48,14 +48,14 @@ export default function StudentDashboardPage() {
 
   return (
     <main className="flex flex-1 flex-col items-center gap-6 px-6 py-10">
-      <div className="w-full max-w-2xl rounded-lg border border-teal-100 bg-teal-50 p-6">
-        <h1 className="text-2xl font-semibold text-stone-900">Welcome back, {user.name}</h1>
-        <p className="mt-1 text-sm text-stone-600">Here's your MentorBridge overview.</p>
+      <div className="w-full max-w-2xl rounded-lg border border-[#39C5BB]/20 bg-[#39C5BB]/10 p-6">
+        <h1 className="text-2xl font-semibold text-[#e7f0ed]">Welcome back, {user.name}</h1>
+        <p className="mt-1 text-sm text-[#9fb8ae]">Here's your MentorBridge overview.</p>
       </div>
 
       {!fetching && progress?.streakWeeks > 0 && (
-        <div className="w-full max-w-2xl rounded-lg border border-stone-200 bg-white p-4 text-sm">
-          <p className="text-stone-500">Learning streak</p>
+        <div className="w-full max-w-2xl rounded-lg border border-[#234339] bg-[#102420] p-4 text-sm">
+          <p className="text-[#9fb8ae]">Learning streak</p>
           <p className="text-2xl font-semibold">
             {progress.streakWeeks} {progress.streakWeeks === 1 ? "week" : "weeks"}
           </p>
@@ -67,10 +67,10 @@ export default function StudentDashboardPage() {
           <Link
             key={link.href}
             href={link.href}
-            className="rounded-lg border border-stone-200 bg-white p-4 transition-colors hover:border-teal-600"
+            className="rounded-lg border border-[#234339] bg-[#102420] p-4 transition-colors hover:border-[#39C5BB]"
           >
-            <p className="font-medium text-stone-900">{link.label}</p>
-            <p className="mt-1 text-xs text-stone-500">{link.description}</p>
+            <p className="font-medium text-[#e7f0ed]">{link.label}</p>
+            <p className="mt-1 text-xs text-[#9fb8ae]">{link.description}</p>
           </Link>
         ))}
       </div>
@@ -78,30 +78,33 @@ export default function StudentDashboardPage() {
       <section className="w-full max-w-2xl">
         <h2 className="mb-3 text-lg font-medium">Recommended courses</h2>
         {interests.length === 0 ? (
-          <p className="text-sm text-stone-500">
+          <p className="text-sm text-[#9fb8ae]">
             Set your subjects of interest on your{" "}
-            <Link href="/student/profile" className="text-teal-700 hover:underline">
+            <Link href="/student/profile" className="text-[#39C5BB] hover:underline">
               profile page
             </Link>{" "}
             to see recommended courses here.
           </p>
         ) : (
-          <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-4">
             {recommended.map(({ subject, courses }) => (
-              <div key={subject.id}>
-                <h3 className="mb-2 text-sm font-medium text-stone-700">{subject.name}</h3>
+              <div key={subject.id} className="rounded-xl border border-[#234339] bg-[#0c1917] p-4">
+                <div className="mb-3 flex items-center gap-2">
+                  <span className="h-2 w-2 shrink-0 rounded-full bg-gradient-to-r from-[#39C5BB] to-[#ff6fb4]" />
+                  <h3 className="text-sm font-semibold text-[#e7f0ed]">{subject.name}</h3>
+                </div>
                 {courses.length === 0 ? (
-                  <p className="text-xs text-stone-400">No courses in this subject yet.</p>
+                  <p className="text-xs text-[#6f8981]">No courses in this subject yet.</p>
                 ) : (
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                     {courses.map((course) => (
                       <Link
                         key={course.id}
                         href={`/courses/${course.id}`}
-                        className="rounded-lg border border-stone-200 bg-white p-3 text-sm hover:border-teal-600"
+                        className="rounded-lg border border-[#2c4a40] bg-[#102420] p-3 text-sm transition-colors hover:border-[#39C5BB]"
                       >
-                        <p className="font-medium text-stone-900">{course.title}</p>
-                        <p className="text-xs text-stone-500">
+                        <p className="font-medium text-[#e7f0ed]">{course.title}</p>
+                        <p className="text-xs text-[#9fb8ae]">
                           {course.mentorProfile.user.name} · {course.difficultyLevel}
                         </p>
                       </Link>

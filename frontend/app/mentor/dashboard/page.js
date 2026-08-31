@@ -7,7 +7,7 @@ import { useRequireRole, useAuth } from "@/lib/auth-context";
 import Badge from "@/components/Badge";
 import * as api from "@/lib/api";
 
-const TEAL = [13, 148, 136]; // matches the app's teal-600 accent
+const TEAL = [13, 148, 136]; // matches the app's [#12796f] accent
 const STONE = [68, 64, 60];
 const MAX_LOG_ROWS = 18;
 
@@ -109,29 +109,29 @@ export default function MentorDashboardPage() {
 
   return (
     <main className="flex flex-1 flex-col items-center gap-6 px-6 py-10">
-      <div className="w-full max-w-2xl rounded-lg border border-teal-100 bg-teal-50 p-6">
-        <h1 className="text-2xl font-semibold text-stone-900">Welcome back, {user.name}</h1>
-        <p className="mt-1 text-sm text-stone-600">Here's your MentorBridge overview.</p>
+      <div className="w-full max-w-2xl rounded-lg border border-[#39C5BB]/20 bg-[#39C5BB]/10 p-6">
+        <h1 className="text-2xl font-semibold text-[#e7f0ed]">Welcome back, {user.name}</h1>
+        <p className="mt-1 text-sm text-[#9fb8ae]">Here's your MentorBridge overview.</p>
       </div>
 
       {profile?.verificationStatus === "PENDING" && (
-        <p className="w-full max-w-2xl rounded-lg bg-yellow-50 px-4 py-2 text-sm text-yellow-800">
+        <p className="w-full max-w-2xl rounded-lg bg-amber-500/10 px-4 py-2 text-sm text-amber-300">
           Your mentor profile is pending admin verification.
         </p>
       )}
 
       {profile?.verificationStatus === "VERIFIED" && (
         <>
-          <div className="w-full max-w-2xl rounded-lg border border-stone-200 bg-white p-4 text-sm">
+          <div className="w-full max-w-2xl rounded-lg border border-[#234339] bg-[#102420] p-4 text-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-stone-500">Total service hours</p>
+                <p className="text-[#9fb8ae]">Total service hours</p>
                 <p className="text-2xl font-semibold">{fetching ? "…" : serviceHours?.totalHours ?? 0}</p>
               </div>
               <button
                 onClick={downloadCertificate}
                 disabled={fetching || !serviceHours?.logs?.length}
-                className="rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-sm hover:bg-stone-50 disabled:opacity-50"
+                className="rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-1.5 text-sm hover:bg-[#17322b] disabled:opacity-50"
               >
                 Download certificate
               </button>
@@ -140,11 +140,11 @@ export default function MentorDashboardPage() {
 
           <section className="w-full max-w-2xl">
             <h2 className="mb-1 text-lg font-medium">Your badges</h2>
-            <p className="mb-3 text-xs text-stone-500">Hover a badge to see how it's earned.</p>
+            <p className="mb-3 text-xs text-[#9fb8ae]">Hover a badge to see how it's earned.</p>
             {fetching ? (
-              <p className="text-sm text-stone-500">Loading…</p>
+              <p className="text-sm text-[#9fb8ae]">Loading…</p>
             ) : (
-              <div className="grid grid-cols-4 gap-4 rounded-lg border border-stone-200 bg-white p-4 sm:grid-cols-4">
+              <div className="grid grid-cols-4 gap-4 rounded-lg border border-[#234339] bg-[#102420] p-4 sm:grid-cols-4">
                 {badges.map((badge) => (
                   <Badge key={badge.id} badge={badge} earned={badge.earned} />
                 ))}
@@ -157,10 +157,10 @@ export default function MentorDashboardPage() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="rounded-lg border border-stone-200 bg-white p-4 transition-colors hover:border-teal-600"
+                className="rounded-lg border border-[#234339] bg-[#102420] p-4 transition-colors hover:border-[#39C5BB]"
               >
-                <p className="font-medium text-stone-900">{link.label}</p>
-                <p className="mt-1 text-xs text-stone-500">{link.description}</p>
+                <p className="font-medium text-[#e7f0ed]">{link.label}</p>
+                <p className="mt-1 text-xs text-[#9fb8ae]">{link.description}</p>
               </Link>
             ))}
           </div>

@@ -52,23 +52,23 @@ export default function NewCoursePage() {
 
       <form onSubmit={handleSubmit} className="flex w-full max-w-md flex-col gap-4">
         <Field label="Course type">
-          <div className="flex rounded-lg border border-stone-300 bg-white p-1 text-sm">
+          <div className="flex rounded-lg border border-[#2c4a40] bg-[#102420] p-1 text-sm">
             <button
               type="button"
               onClick={() => setMode("OPEN")}
-              className={`flex-1 rounded px-4 py-1.5 ${mode === "OPEN" ? "bg-teal-600 text-white" : ""}`}
+              className={`flex-1 rounded px-4 py-1.5 ${mode === "OPEN" ? "bg-gradient-to-r from-[#12796f] to-[#6FE9DC] text-white" : ""}`}
             >
               Open drop-in
             </button>
             <button
               type="button"
               onClick={() => setMode("STRUCTURED")}
-              className={`flex-1 rounded px-4 py-1.5 ${mode === "STRUCTURED" ? "bg-teal-600 text-white" : ""}`}
+              className={`flex-1 rounded px-4 py-1.5 ${mode === "STRUCTURED" ? "bg-gradient-to-r from-[#12796f] to-[#6FE9DC] text-white" : ""}`}
             >
               Structured
             </button>
           </div>
-          <p className="mt-1 text-xs text-stone-500">
+          <p className="mt-1 text-xs text-[#9fb8ae]">
             {mode === "OPEN"
               ? "Runs indefinitely with rolling membership, like today — students can join any time."
               : "Enrollment locks once the first class starts, and you can end the course to close it out and collect ratings."}
@@ -91,7 +91,7 @@ export default function NewCoursePage() {
             placeholder="Data Structures"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="rounded-lg border border-stone-300 bg-white px-3 py-2"
+            className="rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-2"
           />
         </Field>
 
@@ -102,7 +102,7 @@ export default function NewCoursePage() {
             placeholder="What this course covers…"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="rounded-lg border border-stone-300 bg-white px-3 py-2"
+            className="rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-2"
           />
         </Field>
 
@@ -110,7 +110,7 @@ export default function NewCoursePage() {
           <select
             value={difficultyLevel}
             onChange={(e) => setDifficultyLevel(e.target.value)}
-            className="rounded-lg border border-stone-300 bg-white px-3 py-2"
+            className="rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-2"
           >
             {DIFFICULTY_LEVELS.map((level) => (
               <option key={level} value={level}>
@@ -125,12 +125,12 @@ export default function NewCoursePage() {
           <AvailabilityEditor value={timeSlots} onChange={setTimeSlots} />
         </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-red-400">{error}</p>}
 
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-lg bg-teal-600 px-4 py-2 text-white hover:bg-teal-700 disabled:opacity-50"
+          className="rounded-lg bg-gradient-to-r from-[#12796f] to-[#6FE9DC] px-4 py-2 text-white hover:opacity-90 disabled:opacity-50"
         >
           {submitting ? "Creating…" : "Create course"}
         </button>

@@ -18,18 +18,18 @@ export default function AdminMonitoringPage() {
       <div className="w-full max-w-3xl">
         <h1 className="text-2xl font-semibold">Monitoring</h1>
 
-        <div className="mt-4 flex rounded-lg border border-stone-300 bg-white p-1 text-sm">
+        <div className="mt-4 flex rounded-lg border border-[#2c4a40] bg-[#102420] p-1 text-sm">
           <button
             type="button"
             onClick={() => setTab("flagged")}
-            className={`rounded px-4 py-1.5 ${tab === "flagged" ? "bg-teal-600 text-white" : ""}`}
+            className={`rounded px-4 py-1.5 ${tab === "flagged" ? "bg-gradient-to-r from-[#12796f] to-[#6FE9DC] text-white" : ""}`}
           >
             Flagged Activity
           </button>
           <button
             type="button"
             onClick={() => setTab("browse")}
-            className={`rounded px-4 py-1.5 ${tab === "browse" ? "bg-teal-600 text-white" : ""}`}
+            className={`rounded px-4 py-1.5 ${tab === "browse" ? "bg-gradient-to-r from-[#12796f] to-[#6FE9DC] text-white" : ""}`}
           >
             All Sessions &amp; Courses
           </button>
@@ -69,17 +69,17 @@ function FlaggedActivityTab({ token }) {
   return (
     <div className="w-full max-w-3xl">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-stone-500">
+        <p className="text-sm text-[#9fb8ae]">
           Students a mentor flagged as a no-show or for misconduct after a 1:1 session.
         </p>
-        <div className="flex rounded-lg border border-stone-300 bg-white p-1 text-sm">
+        <div className="flex rounded-lg border border-[#2c4a40] bg-[#102420] p-1 text-sm">
           {FLAG_FILTERS.map((opt) => (
             <button
               key={opt.value}
               type="button"
               onClick={() => setFlagFilter(opt.value)}
               className={`rounded px-3 py-1 ${
-                flagFilter === opt.value ? "bg-teal-600 text-white" : "text-stone-600 hover:bg-stone-50"
+                flagFilter === opt.value ? "bg-gradient-to-r from-[#12796f] to-[#6FE9DC] text-white" : "text-[#9fb8ae] hover:bg-[#17322b]"
               }`}
             >
               {opt.label}
@@ -90,30 +90,30 @@ function FlaggedActivityTab({ token }) {
 
       <ul className="mt-4 flex flex-col gap-2">
         {fetching ? (
-          <p className="text-sm text-stone-500">Loading…</p>
+          <p className="text-sm text-[#9fb8ae]">Loading…</p>
         ) : filtered.length === 0 ? (
-          <p className="text-sm text-stone-500">No flagged activity.</p>
+          <p className="text-sm text-[#9fb8ae]">No flagged activity.</p>
         ) : (
           filtered.map((r) => (
-            <li key={r.id} className="rounded-lg border border-stone-200 bg-white p-3 text-sm">
+            <li key={r.id} className="rounded-lg border border-[#234339] bg-[#102420] p-3 text-sm">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="font-medium">
                     {r.ratee.name}
-                    {!r.ratee.isActive && <span className="ml-1 text-xs text-red-600">(suspended)</span>}
+                    {!r.ratee.isActive && <span className="ml-1 text-xs text-red-400">(suspended)</span>}
                   </p>
-                  <p className="text-stone-500">
+                  <p className="text-[#9fb8ae]">
                     Flagged by {r.rater.name} · {r.session?.helpRequest?.subject?.name || "Unknown subject"} ·{" "}
                     {new Date(r.createdAt).toLocaleDateString()}
                   </p>
-                  {r.comment && <p className="mt-1 text-stone-600">&quot;{r.comment}&quot;</p>}
+                  {r.comment && <p className="mt-1 text-[#9fb8ae]">&quot;{r.comment}&quot;</p>}
                 </div>
                 <div className="flex shrink-0 gap-1.5">
                   {r.isNoShow && (
-                    <span className="rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800">No-show</span>
+                    <span className="rounded bg-amber-500/15 px-1.5 py-0.5 text-xs text-amber-300">No-show</span>
                   )}
                   {r.isMisconduct && (
-                    <span className="rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-800">Misconduct</span>
+                    <span className="rounded bg-red-500/15 px-1.5 py-0.5 text-xs text-red-300">Misconduct</span>
                   )}
                 </div>
               </div>
@@ -153,7 +153,7 @@ function BrowseTab({ token }) {
           <select
             value={sessionStatus}
             onChange={(e) => setSessionStatus(e.target.value)}
-            className="rounded-lg border border-stone-300 bg-white px-2 py-1 text-sm"
+            className="rounded-lg border border-[#2c4a40] bg-[#102420] px-2 py-1 text-sm"
           >
             {SESSION_STATUSES.map((s) => (
               <option key={s} value={s}>
@@ -164,16 +164,16 @@ function BrowseTab({ token }) {
         </div>
 
         {fetching ? (
-          <p className="text-sm text-stone-500">Loading…</p>
+          <p className="text-sm text-[#9fb8ae]">Loading…</p>
         ) : filteredSessions.length === 0 ? (
-          <p className="text-sm text-stone-500">No sessions match.</p>
+          <p className="text-sm text-[#9fb8ae]">No sessions match.</p>
         ) : (
           <ul className="flex flex-col gap-2">
             {filteredSessions.map((s) => (
-              <li key={s.id} className="rounded-lg border border-stone-200 bg-white p-3 text-sm">
+              <li key={s.id} className="rounded-lg border border-[#234339] bg-[#102420] p-3 text-sm">
                 <span className="font-medium">{s.helpRequest.topic}</span> · {s.helpRequest.subject.name} ·{" "}
                 {s.mentorProfile.user.name} &rarr; {s.helpRequest.studentProfile.user.name} ·{" "}
-                <span className="text-stone-500">{s.status}</span>
+                <span className="text-[#9fb8ae]">{s.status}</span>
               </li>
             ))}
           </ul>
@@ -186,7 +186,7 @@ function BrowseTab({ token }) {
           <select
             value={courseStatus}
             onChange={(e) => setCourseStatus(e.target.value)}
-            className="rounded-lg border border-stone-300 bg-white px-2 py-1 text-sm"
+            className="rounded-lg border border-[#2c4a40] bg-[#102420] px-2 py-1 text-sm"
           >
             {COURSE_STATUSES.map((s) => (
               <option key={s} value={s}>
@@ -197,15 +197,15 @@ function BrowseTab({ token }) {
         </div>
 
         {fetching ? (
-          <p className="text-sm text-stone-500">Loading…</p>
+          <p className="text-sm text-[#9fb8ae]">Loading…</p>
         ) : filteredCourses.length === 0 ? (
-          <p className="text-sm text-stone-500">No courses match.</p>
+          <p className="text-sm text-[#9fb8ae]">No courses match.</p>
         ) : (
           <ul className="flex flex-col gap-2">
             {filteredCourses.map((c) => (
-              <li key={c.id} className="rounded-lg border border-stone-200 bg-white p-3 text-sm">
+              <li key={c.id} className="rounded-lg border border-[#234339] bg-[#102420] p-3 text-sm">
                 <span className="font-medium">{c.title}</span> · {c.subject.name} · {c.mentorProfile.user.name} ·{" "}
-                {c._count.enrollments} enrolled · <span className="text-stone-500">{c.status}</span>
+                {c._count.enrollments} enrolled · <span className="text-[#9fb8ae]">{c.status}</span>
               </li>
             ))}
           </ul>

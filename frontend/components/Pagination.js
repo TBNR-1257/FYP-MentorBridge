@@ -8,17 +8,17 @@ export default function Pagination({ page, totalPages, onChange }) {
       <button
         onClick={() => onChange(Math.max(1, page - 1))}
         disabled={page <= 1}
-        className="rounded-lg border border-stone-300 bg-white px-3 py-1.5 hover:bg-stone-50 disabled:opacity-50"
+        className="rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-1.5 hover:bg-[#17322b] disabled:opacity-50"
       >
         Previous
       </button>
-      <span className="text-stone-500">
+      <span className="text-[#9fb8ae]">
         Page {page} of {totalPages}
       </span>
       <button
         onClick={() => onChange(Math.min(totalPages, page + 1))}
         disabled={page >= totalPages}
-        className="rounded-lg border border-stone-300 bg-white px-3 py-1.5 hover:bg-stone-50 disabled:opacity-50"
+        className="rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-1.5 hover:bg-[#17322b] disabled:opacity-50"
       >
         Next
       </button>

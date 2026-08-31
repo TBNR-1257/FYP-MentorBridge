@@ -29,32 +29,32 @@ export default function ResourceList({ resources, canAdd, onAdd }) {
   }
 
   return (
-    <section className="rounded-lg border border-stone-200 bg-white p-4 text-sm">
+    <section className="rounded-lg border border-[#234339] bg-[#102420] p-4 text-sm">
       <h2 className="mb-2 font-medium">Resources</h2>
 
       {resources.length === 0 ? (
-        <p className="text-stone-500">No resources shared yet.</p>
+        <p className="text-[#9fb8ae]">No resources shared yet.</p>
       ) : (
         <ul className="flex max-h-72 flex-col gap-2 overflow-y-auto">
           {resources.map((r) => (
-            <li key={r.id} className="rounded-lg border border-stone-100 p-2">
-              <a href={r.url} target="_blank" rel="noreferrer" className="font-medium text-teal-700 hover:underline">
+            <li key={r.id} className="rounded-lg border border-[#1a2e28] p-2">
+              <a href={r.url} target="_blank" rel="noreferrer" className="font-medium text-[#39C5BB] hover:underline">
                 {r.title}
               </a>
-              {r.description && <p className="text-stone-500">{r.description}</p>}
+              {r.description && <p className="text-[#9fb8ae]">{r.description}</p>}
             </li>
           ))}
         </ul>
       )}
 
       {canAdd && (
-        <form onSubmit={handleSubmit} className="mt-3 flex flex-col gap-2 border-t border-stone-100 pt-3">
+        <form onSubmit={handleSubmit} className="mt-3 flex flex-col gap-2 border-t border-[#1a2e28] pt-3">
           <input
             required
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Title"
-            className="rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-sm"
+            className="rounded-lg border border-[#2c4a40] bg-[#102420] px-2 py-1.5 text-sm"
           />
           <input
             required
@@ -62,19 +62,19 @@ export default function ResourceList({ resources, canAdd, onAdd }) {
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="https://…"
-            className="rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-sm"
+            className="rounded-lg border border-[#2c4a40] bg-[#102420] px-2 py-1.5 text-sm"
           />
           <input
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Optional description"
-            className="rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-sm"
+            className="rounded-lg border border-[#2c4a40] bg-[#102420] px-2 py-1.5 text-sm"
           />
-          {error && <p className="text-xs text-red-600">{error}</p>}
+          {error && <p className="text-xs text-red-400">{error}</p>}
           <button
             type="submit"
             disabled={submitting}
-            className="self-start rounded-lg bg-teal-600 px-3 py-1.5 text-xs text-white hover:bg-teal-700 disabled:opacity-50"
+            className="self-start rounded-lg bg-gradient-to-r from-[#12796f] to-[#6FE9DC] px-3 py-1.5 text-xs text-white hover:opacity-90 disabled:opacity-50"
           >
             {submitting ? "Adding…" : "Add resource"}
           </button>

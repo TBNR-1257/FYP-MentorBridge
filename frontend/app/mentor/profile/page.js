@@ -73,7 +73,7 @@ export default function MentorProfilePage() {
   return (
     <main className="flex flex-1 flex-col items-center gap-6 px-6 py-10">
       <div className="w-full max-w-md">
-        <Link href="/mentor/dashboard" className="text-sm text-stone-500 hover:underline">
+        <Link href="/mentor/dashboard" className="text-sm text-[#9fb8ae] hover:underline">
           &larr; Back to dashboard
         </Link>
         <h1 className="mt-2 text-2xl font-semibold">Edit profile</h1>
@@ -86,10 +86,10 @@ export default function MentorProfilePage() {
             rows={3}
             value={qualifications}
             onChange={(e) => setQualifications(e.target.value)}
-            className="rounded-lg border border-stone-300 bg-white px-3 py-2"
+            className="rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-2"
           />
           {isVerified && (
-            <p className="text-xs text-amber-700">
+            <p className="text-xs text-amber-300">
               Changing this will require admin re-verification.
             </p>
           )}
@@ -100,7 +100,7 @@ export default function MentorProfilePage() {
             rows={3}
             value={bio}
             onChange={(e) => setBio(e.target.value)}
-            className="rounded-lg border border-stone-300 bg-white px-3 py-2"
+            className="rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-2"
           />
         </Field>
 
@@ -109,14 +109,14 @@ export default function MentorProfilePage() {
             required
             value={languages}
             onChange={(e) => setLanguages(e.target.value)}
-            className="rounded-lg border border-stone-300 bg-white px-3 py-2"
+            className="rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-2"
           />
         </Field>
 
         <Field label="Subjects">
           <SubjectTagSelect value={subjects} onChange={setSubjects} placeholder="Search or add a subject…" />
           {isVerified && (
-            <p className="text-xs text-amber-700">
+            <p className="text-xs text-amber-300">
               Changing this will require admin re-verification.
             </p>
           )}
@@ -124,13 +124,13 @@ export default function MentorProfilePage() {
 
         <AvailabilityEditor value={availability} onChange={setAvailability} />
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        {saved && <p className="text-sm text-green-700">Profile updated.</p>}
+        {error && <p className="text-sm text-red-400">{error}</p>}
+        {saved && <p className="text-sm text-green-400">Profile updated.</p>}
 
         <button
           type="submit"
           disabled={submitting || subjects.length === 0}
-          className="rounded-lg bg-teal-600 px-4 py-2 text-white hover:bg-teal-700 disabled:opacity-50"
+          className="rounded-lg bg-gradient-to-r from-[#12796f] to-[#6FE9DC] px-4 py-2 text-white hover:opacity-90 disabled:opacity-50"
         >
           {submitting ? "Saving…" : "Save changes"}
         </button>

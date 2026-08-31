@@ -103,7 +103,7 @@ export default function MentorSessionsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by title…"
-            className="flex-1 rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm"
+            className="flex-1 rounded-lg border border-[#2c4a40] bg-[#102420] px-3 py-2 text-sm"
           />
           <FilterChips value={statusFilter} onChange={setStatusFilter} options={STATUS_FILTERS} />
           <FilterChips value={typeFilter} onChange={setTypeFilter} options={TYPE_FILTERS} />
@@ -111,11 +111,11 @@ export default function MentorSessionsPage() {
 
         <div className="mt-6 flex flex-col gap-2">
           {fetching ? (
-            <p className="text-sm text-stone-500">Loading…</p>
+            <p className="text-sm text-[#9fb8ae]">Loading…</p>
           ) : items.length === 0 ? (
-            <p className="text-sm text-stone-500">No sessions yet.</p>
+            <p className="text-sm text-[#9fb8ae]">No sessions yet.</p>
           ) : filteredItems.length === 0 ? (
-            <p className="text-sm text-stone-500">No sessions match your search/filters.</p>
+            <p className="text-sm text-[#9fb8ae]">No sessions match your search/filters.</p>
           ) : (
             pagedItems.map((item) => <SessionRow key={item.type + item.id} item={item} />)
           )}
@@ -132,15 +132,15 @@ function SessionRow({ item }) {
   return (
     <Link
       href={item.href}
-      className="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white p-3 text-sm hover:bg-stone-50"
+      className="flex items-center justify-between gap-4 rounded-lg border border-[#234339] bg-[#102420] p-3 text-sm hover:bg-[#17322b]"
     >
       <div className="min-w-0">
         <span className="font-medium">{item.title}</span>
-        <p className="truncate text-stone-500">{item.subtitle}</p>
+        <p className="truncate text-[#9fb8ae]">{item.subtitle}</p>
       </div>
       <span
         className={`shrink-0 rounded px-1.5 py-0.5 text-xs ${
-          isOpen ? "bg-teal-100 text-teal-800" : "bg-stone-200 text-stone-600"
+          isOpen ? "bg-[#39C5BB]/15 text-[#a8f0e6]" : "bg-[#1d3a32] text-[#9fb8ae]"
         }`}
       >
         {item.status}
