@@ -1,3 +1,6 @@
+// Student Name: Bryan Wong Tze Hern
+// Student ID: TP086538
+
 import { Montserrat } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";

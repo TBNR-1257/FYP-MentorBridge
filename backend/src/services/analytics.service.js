@@ -1,3 +1,6 @@
+// Student Name: Bryan Wong Tze Hern
+// Student ID: TP086538
+
 const prisma = require("../config/prisma");
 const { computeAvgRating } = require("../utils/ratings");
 
