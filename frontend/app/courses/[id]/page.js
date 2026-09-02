@@ -148,8 +148,10 @@ export default function CourseRoomPage({ params }) {
     setEnding(true);
     setError(null);
     try {
-      const { course: updated } = await api.endCourse(token, id);
-      setCourse(updated);
+      await api.endCourse(token, id);
+      // Ending cancels every upcoming CourseSession server-side — reload rather than
+      // just setCourse so the sessions list reflects that instead of going stale.
+      await load();
       setEndingConfirm(false);
     } catch (err) {
       setError(err.message);
